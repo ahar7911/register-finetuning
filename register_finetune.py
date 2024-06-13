@@ -105,7 +105,7 @@ def train(model : transformers.PreTrainedModel, train_dataloader : DataLoader, n
 
             optimizer.zero_grad()
 
-        print(f"Epoch {epoch+1}: {','.join([name + metric.compute() for name, metric in metrics.items()])}")
+        print(f"Epoch {epoch+1}: {','.join([name + metric.compute().item() for name, metric in metrics.items()])}")
         for metric in metrics.values():
             metric.reset()
 
@@ -125,7 +125,7 @@ def evaluate(model : transformers.PreTrainedModel, test_dataloader : DataLoader,
         for metric in metrics.values():
             metric(preds, batch['labels'])
         
-    print(f"EVALUATING: {','.join([name + metric.compute() for name, metric in metrics.items()])}")
+    print(f"EVALUATING: {','.join([name + metric.compute().item() for name, metric in metrics.items()])}")
         
     for metric in metrics.values():
         metric.reset()
