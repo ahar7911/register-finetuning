@@ -94,7 +94,7 @@ def train(model : transformers.PreTrainedModel, train_dataloader : DataLoader, n
             outputs = model(**batch)
 
             preds = torch.argmax(outputs.logits, dim=-1)
-            for metric in metrics:
+            for metric in metrics.values():
                 metric(preds, batch['labels'])
 
             loss = outputs.loss
@@ -106,7 +106,7 @@ def train(model : transformers.PreTrainedModel, train_dataloader : DataLoader, n
             optimizer.zero_grad()
 
         print(f"Epoch {epoch+1}: {','.join([metric_name + metric.compute() for metric_name in metrics.keys()])}")
-        for metric in metrics:
+        for metric in metrics.values():
             metric.reset()
 
 
@@ -122,12 +122,12 @@ def evaluate(model : transformers.PreTrainedModel, test_dataloader : DataLoader,
         outputs = outputs.logits
         preds = torch.argmax(outputs, dim=-1)
         
-        for metric in metrics:
+        for metric in metrics.values():
             metric(preds, batch['labels'])
         
     print(f"EVALUATING: {','.join([metric_name + metric.compute() for metric_name in metrics.keys()])}")
         
-    for metric in metrics:
+    for metric in metrics.values():
         metric.reset()
 
 
