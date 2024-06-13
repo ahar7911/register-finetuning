@@ -172,7 +172,5 @@ if __name__ == '__main__':
                       help='Number of epochs to finetune model for')
   parser.add_argument('-freeze', action='store_true', 
                       help='Freeze all model layers except last couple and classification head')
-  parser.add_argument('--local', action='store_true',
-                      help='Models are stored locally in models folder')
   args = parser.parse_args()
-  main(args.model, args.eval_lang, args.num_epochs, args.local)
+  main(args.model, args.eval_lang, args.num_epochs)
