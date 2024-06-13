@@ -77,7 +77,7 @@ def get_metrics(num_classes : int, device : torch.device) -> dict[str, torchmetr
                'precision': MulticlassPrecision(num_classes=num_classes),
                'recall': MulticlassRecall(num_classes=num_classes),
                'f1': MulticlassF1Score(num_classes=num_classes)}
-    for metric in metrics:
+    for metric in metrics.values():
         metric.to(device)
     return metrics
 
