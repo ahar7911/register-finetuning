@@ -105,7 +105,11 @@ def train(model : transformers.PreTrainedModel, train_dataloader : DataLoader, n
 
             optimizer.zero_grad()
 
-        print(f"Epoch {epoch+1}: {','.join([name + metric.compute().item() for name, metric in metrics.items()])}")
+        metric_summary = ""
+        for name, metric in metrics.items():
+            metric_summary += name + str(metric.compute().item()) + ", "
+        print(f"Epoch {epoch+1}: {metric_summary}")
+        
         for metric in metrics.values():
             metric.reset()
 
@@ -124,8 +128,11 @@ def evaluate(model : transformers.PreTrainedModel, test_dataloader : DataLoader,
         
         for metric in metrics.values():
             metric(preds, batch['labels'])
-        
-    print(f"EVALUATING: {','.join([name + metric.compute().item() for name, metric in metrics.items()])}")
+    
+    metric_summary = ""
+    for name, metric in metrics.items():
+        metric_summary += name + str(metric.compute().item()) + ", "
+    print(f"EVALUATING: {metric_summary}")
         
     for metric in metrics.values():
         metric.reset()
