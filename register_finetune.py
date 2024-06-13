@@ -160,17 +160,21 @@ def main(model : str, eval_lang : str, num_epochs=4):
 
 
 if __name__ == '__main__':
-  parser = ArgumentParser(prog='Register fine-tuning',
-                          description='Finetinuning LLMs for multilingual classification of registers')
-  parser.add_argument('--model', choices=["mbert", "xlm-r", "glot500"], required=True,
-                      help="LLM to finetune")
-  parser.add_argument('--train_langs', choices=LANGS,
-                      help="Language(s) to finetune register on")
-  parser.add_argument('--eval_lang', choices=LANGS, required=True,
-                      help='Language to evaluate model on')
-  parser.add_argument('--num_epochs',
-                      help='Number of epochs to finetune model for')
-  parser.add_argument('-freeze', action='store_true', 
-                      help='Freeze all model layers except last couple and classification head')
-  args = parser.parse_args()
-  main(args.model, args.eval_lang, args.num_epochs)
+    parser = ArgumentParser(prog='Register fine-tuning',
+                            description='Finetinuning LLMs for multilingual classification of registers')
+    parser.add_argument('--model', choices=["mbert", "xlm-r", "glot500"], required=True,
+                        help="LLM to finetune")
+    parser.add_argument('--train_langs', choices=LANGS,
+                        help="Language(s) to finetune register on")
+    parser.add_argument('--eval_lang', choices=LANGS, required=True,
+                        help='Language to evaluate model on')
+    parser.add_argument('--num_epochs',
+                        help='Number of epochs to finetune model for')
+    parser.add_argument('-freeze', action='store_true', 
+                        help='Freeze all model layers except last couple and classification head')
+    args = parser.parse_args()
+
+    if args.num_epochs is not None:
+        main(args.model, args.eval_lang, args.num_epochs)
+    else:
+        main(args.model, args.eval_lang)
