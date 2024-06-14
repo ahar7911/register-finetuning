@@ -15,5 +15,5 @@ source /home2020/home/lilpa/harbison/experiences/env/bin/activate
 
 # run python script here
 echo "start"
-python register_finetune.py --model mbert --eval_lang fr
+python finetune.py --model mbert --train_langs fr
 echo "end"
