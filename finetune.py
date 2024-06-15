@@ -12,7 +12,6 @@ import torchmetrics
 
 from utils.corpus_load import load_data, REGISTERS
 from utils.metrics import get_metrics
-from evaluate import evaluate
 
 #TODO arguments, early stopping and checkpointing
 
