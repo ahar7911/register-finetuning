@@ -1,6 +1,6 @@
 {
-    "en" : "/../register-corpus/CORE/english/CORE_en.tsv",
-    "fr" : "/../register-corpus/CORE/french/CORE_fr.tsv",
-    "sw" : "/../register-corpus/CORE/swedish/CORE_sw.tsv",
-    "fi" : "/../register-corpus/CORE/finnish/CORE_fi.tsv"
+    "en" : "../corpus/register-corpus/CORE/english/CORE_en.tsv",
+    "fr" : "../corpus/register-corpus/CORE/french/CORE_fr.tsv",
+    "sw" : "../corpus/register-corpus/CORE/swedish/CORE_sw.tsv",
+    "fi" : "../corpus/register-corpus/CORE/finnish/CORE_fi.tsv"
 }
