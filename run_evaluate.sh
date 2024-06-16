@@ -14,5 +14,11 @@ TRANSFORMERS_OFFLINE=1
 module load python/python-3.11.3
 source /home2020/home/lilpa/harbison/experiences/env/bin/activate
 
-python finetune.py --model mbert --train_langs fr
-echo "FINETUNING COMPLETE"
+langs=("fr sw fi")
+
+for lang in $langs
+do
+    echo "EVALUATING $l"
+    python evaluate.py --model ./models/mbert --train_langs $l
+    echo "FINETUNING COMPLETE"
+done

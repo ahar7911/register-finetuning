@@ -73,7 +73,7 @@ def main(model : str, train_langs : str, num_epochs=4):
     )
 
     train(classifier, train_dataloader, num_epochs, device, optimizer, lr_scheduler, metrics)
-    classifier.save_pretrained(f'./models/mbert/', from_pt=True)
+    classifier.save_pretrained(f'./models/mbert{train_langs}/', from_pt=True)
 
 
 if __name__ == '__main__':
