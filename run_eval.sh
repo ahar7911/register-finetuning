@@ -17,7 +17,7 @@ langs=("fr" "sw" "fi")
 
 for lang in $langs
 do
-    echo "EVALUATING $l"
-    python evaluate.py --model ./models/mbert --lang $l
+    echo "EVALUATING $lang"
+    python evaluate.py --model ./models/mbert --lang $lang
     echo "FINETUNING COMPLETE"
 done
