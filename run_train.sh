@@ -2,7 +2,7 @@
 #SBATCH --job-name=finetune_reg_class
 #SBATCH -A lilpa
 #SBATCH -p publicgpu
-#SBATCH -N=1
+#SBATCH -N 1
 #SBATCH --exclusive
 #SBATCH --gres=gpu:4
 #SBATCH --constraint=gputc
