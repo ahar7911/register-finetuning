@@ -8,11 +8,11 @@ REGISTERS = ['IN', 'IP/OP', 'RN', 'JN', 'HI', 'LY', 'NID', 'AID']
 REG2ID = {reg : REGISTERS.index(reg) for reg in REGISTERS}
 
 class RegisterDataset(Dataset):
-    def __init__(self, texts, registers, tokenizer):
+    def __init__(self, texts, registers, tokenizer, max_len=512):
         self.texts = texts
         self.registers = registers
         self.tokenizer = tokenizer
-        # self.max_len = max_len
+        self.max_len = max_len
 
     def __len__(self):
         return len(self.texts)
@@ -23,7 +23,7 @@ class RegisterDataset(Dataset):
 
         # https://huggingface.co/docs/transformers/v4.41.3/en/internal/tokenization_utils#transformers.PreTrainedTokenizerBase.__call__
         encoded_text = self.tokenizer(text,
-                                  # max_length = self.max_len,
+                                  max_length = self.max_len,
                                   return_token_type_ids = False,
                                   return_attention_mask = True,
                                   return_tensors = "pt",
