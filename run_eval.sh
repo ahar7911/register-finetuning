@@ -1,5 +1,5 @@
 #! /bin/bash
-#SBATCH --job-name=finetune_reg_class
+#SBATCH --job-name=evaluate_reg_class
 #SBATCH -A lilpa
 #SBATCH -p publicgpu
 #SBATCH -N 1
