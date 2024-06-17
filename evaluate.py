@@ -45,7 +45,7 @@ def main(model : str, train_langs : str, eval_lang : str, lang2tsv : dict[str, s
         model2chckpt = json.load(file)
     checkpoint = model2chckpt[model]
     
-    model = AutoModelForSequenceClassification.from_pretrained(f'.models/mbert-{train_langs}')
+    model = AutoModelForSequenceClassification.from_pretrained(f'./models/mbert-{train_langs}')
     test_dataloader = load_data(eval_lang_tsv, checkpoint, local=True, batch_size=64)
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     metrics = get_metrics()
