@@ -1,8 +1,8 @@
+import json
 from huggingface_hub import snapshot_download
 
-models = ['google-bert/bert-base-multilingual-cased', 
-          'FacebookAI/xlm-roberta-base', 
-          'cis-lmu/glot500-base']
+with open('model2chckpt.json') as file:
+    model2chckpt = json.load(file)
 
-for chckpt in models:
+for chckpt in model2chckpt.values():
     snapshot_download(repo_id=chckpt)
