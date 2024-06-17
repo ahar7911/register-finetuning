@@ -21,5 +21,6 @@ for lang in "${eval_langs[@]}"
 do
     echo "evaluating on $lang"
     python evaluate.py --model $model --train_langs $train_langs --eval_lang $lang
-    echo "evaluation complete"
+    echo "$lang complete"
 done
+echo "all evaluations complete"
