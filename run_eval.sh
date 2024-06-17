@@ -18,7 +18,7 @@ train_langs=fr
 eval_langs=("fr" "sw" "fi")
 
 echo "evaluating $model trained on $train_langs"
-for lang in $eval_langs;
+for lang in "${eval_langs[@]}"
 do
     echo "evaluating on $lang"
     python evaluate.py --model $model --train_langs $train_langs --eval_lang $lang
