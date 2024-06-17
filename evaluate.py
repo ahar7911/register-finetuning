@@ -62,7 +62,7 @@ if __name__ == '__main__':
         lang2tsv = json.load(file)
     
     parser = ArgumentParser(prog="Evaluate register classification",
-                            description="Evaluates a multilingual model's to classify registers in one language")
+                            description="Evaluates multilingual model's ability to classify registers in one language")
     parser.add_argument('--model', required=True,
                         help='Name of model to evaluate')
     parser.add_argument('--train_langs',
