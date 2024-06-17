@@ -20,7 +20,7 @@ echo "evaluating $model trained on $train_langs"
 for lang in "${eval_langs[@]}"
 do
     echo "evaluating on $lang"
-    python evaluate.py --model $model --train_langs $train_langs --eval_lang $lang
+    time -f "elapsed time: %E" python evaluate.py --model $model --train_langs $train_langs --eval_lang $lang
     echo "$lang complete"
 done
 echo "all evaluations complete"
