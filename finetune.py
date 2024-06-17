@@ -47,11 +47,11 @@ def main(model_name : str, train_langs : str, lang2tsv : dict[str, str], num_epo
         model2chckpt = json.load(file)
     checkpoint = model2chckpt[model_name]
 
-    num_classes = len(REGISTERS)
+    num_labels = len(REGISTERS)
     train_lang_tsv = lang2tsv[train_langs]
 
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-    classifier = AutoModelForSequenceClassification.from_pretrained(checkpoint, num_labels=num_classes)
+    classifier = AutoModelForSequenceClassification.from_pretrained(checkpoint, num_labels=num_labels)
     classifier.to(device)
 
     train_dataloader = load_data(train_lang_tsv, checkpoint, batch_size=16)
@@ -62,7 +62,7 @@ def main(model_name : str, train_langs : str, lang2tsv : dict[str, str], num_epo
         num_warmup_steps=50,
         num_training_steps=len(train_dataloader) * num_epochs
     )
-    metrics = get_metrics(num_classes, device)
+    metrics = get_metrics(num_labels, device)
     output_filepath = f'output/{model_name}-train-{train_langs}.json'
 
     train(classifier, train_dataloader, num_epochs, device, optimizer, lr_scheduler, metrics, output_filepath)
