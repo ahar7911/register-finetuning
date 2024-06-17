@@ -13,9 +13,7 @@ def get_metrics(num_classes : int, device : torch.device) -> dict[str, torchmetr
 
     return metrics
 
-def add_batch(metrics : dict[str, torchmetrics.Metric], batch_predictions, batch_labels):
-    print(type(batch_predictions))
-    print(type(batch_labels))
+def add_batch(metrics : dict[str, torchmetrics.Metric], batch_predictions : torch.Tensor, batch_labels : torch.Tensor):
     for metric in metrics.values():
         metric(batch_predictions, batch_labels)
 
@@ -23,7 +21,6 @@ def get_metric_summary(metrics : dict[str, torchmetrics.Metric]) -> dict[str, fl
     metric_summary = {}
     for name, metric in metrics.items():
         metric_summary = {**metric_summary, name : metric.compute().item()}
-    print(type(metric_summary['f1']))
     return metric_summary
 
 def reset_metrics(metrics : dict[str, torchmetrics.Metric]):
