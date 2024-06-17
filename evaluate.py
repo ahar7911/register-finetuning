@@ -22,6 +22,7 @@ def evaluate(model : transformers.PreTrainedModel, test_dataloader : DataLoader,
             outputs = model(**batch)
         
         outputs = outputs.logits
+        print(outputs.shape)
         print(outputs)
         preds = torch.argmax(outputs, dim=-1)
         add_batch(metrics, preds, batch['labels'])
