@@ -1,13 +1,10 @@
 from argparse import ArgumentParser
-
 import json
 
 import torch
 from torch.utils.data import DataLoader
-
 import transformers
 from transformers import AutoModelForSequenceClassification, get_scheduler
-
 import torchmetrics
 
 from utils.corpus_load import load_data, REGISTERS
@@ -16,6 +13,7 @@ from utils.metrics import get_metrics, add_batch, get_metric_summary, reset_metr
 def train(model : transformers.PreTrainedModel, train_dataloader : DataLoader, num_epochs: int, 
           device : torch.device, optimizer : torch.optim.Optimizer, lr_scheduler : torch.optim.lr_scheduler.LambdaLR, 
           metrics : dict[str, torchmetrics.Metric], output_file_str : str):
+
     train_summary = {}
     for epoch in range(num_epochs):
         model.train()
@@ -34,11 +32,10 @@ def train(model : transformers.PreTrainedModel, train_dataloader : DataLoader, n
 
             optimizer.step()
             lr_scheduler.step()
-
+            
             optimizer.zero_grad()
 
         train_summary[epoch_str] = get_metric_summary(metrics)
-        
         reset_metrics(metrics)
     
     with open(output_file_str, 'w') as file:
@@ -52,14 +49,12 @@ def main(model_name : str, train_langs : str, lang2tsv : dict[str, str], num_epo
 
     num_classes = len(REGISTERS)
     train_lang_tsv = lang2tsv[train_langs]
-    output_filepath = f'output/{model_name}-train-{train_langs}.json'
-    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
+    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     classifier = AutoModelForSequenceClassification.from_pretrained(checkpoint, num_labels=num_classes)
     classifier.to(device)
 
     train_dataloader = load_data(train_lang_tsv, checkpoint, batch_size=16)
-    metrics = get_metrics(num_classes, device)
     optimizer = torch.optim.AdamW(classifier.parameters(), lr=5e-5)
     lr_scheduler = get_scheduler(
         "linear",
@@ -67,6 +62,8 @@ def main(model_name : str, train_langs : str, lang2tsv : dict[str, str], num_epo
         num_warmup_steps=50,
         num_training_steps=len(train_dataloader) * num_epochs
     )
+    metrics = get_metrics(num_classes, device)
+    output_filepath = f'output/{model_name}-train-{train_langs}.json'
 
     train(classifier, train_dataloader, num_epochs, device, optimizer, lr_scheduler, metrics, output_filepath)
     classifier.save_pretrained(f'./models/mbert-{train_langs}/', from_pt=True)
@@ -81,9 +78,9 @@ if __name__ == '__main__':
     parser.add_argument('--model', choices=["mbert", "xlm-r", "glot500"], required=True,
                         help="LLM to finetune")
     parser.add_argument('--train_langs', choices=lang2tsv.keys(), required=True,
-                        help="Language(s) to finetune register on")
+                        help="Language(s) to finetune register classification on")
     parser.add_argument('--num_epochs',
-                        help='Number of epochs to finetune model for')
+                        help='Number of epochs to finetune model for. Default is 4')
     parser.add_argument('--freeze', action='store_true', 
                         help='Freeze all model layers except last couple and classification head')
     args = parser.parse_args()

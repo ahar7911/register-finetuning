@@ -2,7 +2,6 @@ import pandas as pd
 
 import torch
 from torch.utils.data import Dataset, DataLoader
-
 from transformers import AutoTokenizer
 
 REGISTERS = ['IN', 'IP/OP', 'RN', 'JN', 'HI', 'LY', 'NID', 'AID']
