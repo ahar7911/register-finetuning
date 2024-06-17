@@ -12,7 +12,8 @@ from utils.corpus_load import load_data
 from utils.metrics import get_metrics
 
 def evaluate(model : transformers.PreTrainedModel, test_dataloader : DataLoader, 
-             device : torch.device, metrics : dict[str, torchmetrics.Metric]):
+             device : torch.device, metrics : dict[str, torchmetrics.Metric],
+             output_filepath : str):
     model.eval()
     for batch in test_dataloader:
         batch = {k: v.to(device) for k,v in batch.items()}
@@ -26,15 +27,20 @@ def evaluate(model : transformers.PreTrainedModel, test_dataloader : DataLoader,
         for metric in metrics.values():
             metric(preds, batch['labels'])
     
-    metric_summary = ""
+    metric_summary = {}
     for name, metric in metrics.items():
-        metric_summary += name + str(metric.compute().item()) + ", "
-    print(f"EVALUATING: {metric_summary}")
+        metric_summary = {**metric_summary, name : metric.compute()}
+
+    with open(output_filepath, 'w') as file:
+        json.dump(file, metric_summary)
         
     for metric in metrics.values():
         metric.reset()
 
-def main(model : str, train_langs : str, eval_lang_tsv : str):
+def main(model : str, train_langs : str, eval_lang : str, lang2tsv : dict[str, str]):
+    eval_lang_tsv = lang2tsv[eval_lang]
+    output_filepath = f'output/output-{train_langs}-{eval_lang}.json'
+
     with open('utils/model2chckpt.json') as file:
         model2chckpt = json.load(file)
     checkpoint = model2chckpt[model]
@@ -44,7 +50,7 @@ def main(model : str, train_langs : str, eval_lang_tsv : str):
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     metrics = get_metrics()
 
-    evaluate(model, test_dataloader, device, metrics)
+    evaluate(model, test_dataloader, device, metrics, output_filepath)
     
 
 if __name__ == '__main__':
@@ -61,5 +67,5 @@ if __name__ == '__main__':
                         help='Language to evaluate fine-tuned model on')
     args = parser.parse_args()
     
-    eval_lang_tsv = lang2tsv[args.eval_lang]
-    main(args.model, args.train_langs, eval_lang_tsv)
+    
+    main(args.model, args.train_langs, args.eval_lang, lang2tsv)

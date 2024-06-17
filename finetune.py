@@ -17,12 +17,15 @@ from utils.metrics import get_metrics
 
 
 def train(model : transformers.PreTrainedModel, train_dataloader : DataLoader, num_epochs: int, 
-          device : torch.device, optimizer : torch.optim.Optimizer, lr_scheduler, metrics : dict[str, torchmetrics.Metric]):
+          device : torch.device, optimizer : torch.optim.Optimizer, lr_scheduler, metrics : dict[str, torchmetrics.Metric],
+          output_file_str : str):
     print('TRAINING')
+    train_summary = {}
     for epoch in range(num_epochs):
         model.train()
+        epoch_str = f'epoch {epoch + 1}'
 
-        print(f"Epoch {epoch + 1} training:")
+        print(f"{epoch_str} training")
         for i, batch in enumerate(train_dataloader):
             batch = {k: v.to(device) for k, v in batch.items()}
             outputs = model(**batch)
@@ -39,23 +42,28 @@ def train(model : transformers.PreTrainedModel, train_dataloader : DataLoader, n
 
             optimizer.zero_grad()
 
-        metric_summary = ""
+        metric_summary = {}
         for name, metric in metrics.items():
-            metric_summary += name + str(metric.compute().item()) + ", "
-        print(f"Epoch {epoch+1}: {metric_summary}")
+            metric_summary = {**metric_summary, name : metric.compute()}
+        train_summary[epoch_str] = metric_summary
         
         for metric in metrics.values():
             metric.reset()
+    
+    with open(output_file_str, 'w') as file:
+        json.dump(file, train_summary)
 
 
-def main(model : str, train_langs : str, num_epochs=4):
+def main(model : str, train_langs : str, lang2tsv : dict[str, str], num_epochs=4):
     with open('utils/model2chckpt.json') as file:
         model2chckpt = json.load(file)
-    
-    num_classes = len(REGISTERS)
     checkpoint = model2chckpt[model]
 
-    train_dataloader = load_data(train_langs, checkpoint, batch_size=16)
+    num_classes = len(REGISTERS)
+    train_lang_tsv = lang2tsv[train_langs]
+    output_filepath = f'output/output-{train_langs}.json'
+
+    train_dataloader = load_data(train_lang_tsv, checkpoint, batch_size=16)
 
     classifier = AutoModelForSequenceClassification.from_pretrained(checkpoint, num_labels=num_classes)
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
@@ -71,7 +79,7 @@ def main(model : str, train_langs : str, num_epochs=4):
         num_training_steps=len(train_dataloader) * num_epochs
     )
 
-    train(classifier, train_dataloader, num_epochs, device, optimizer, lr_scheduler, metrics)
+    train(classifier, train_dataloader, num_epochs, device, optimizer, lr_scheduler, metrics, output_filepath)
     classifier.save_pretrained(f'./models/mbert-{train_langs}/', from_pt=True)
 
 
@@ -91,9 +99,7 @@ if __name__ == '__main__':
                         help='Freeze all model layers except last couple and classification head')
     args = parser.parse_args()
 
-    train_lang_tsv = lang2tsv[args.train_langs]
-
     if args.num_epochs is not None:
-        main(args.model, train_lang_tsv, args.num_epochs)
+        main(args.model, args.train_langs, lang2tsv, args.num_epochs)
     else:
-        main(args.model, train_lang_tsv)
+        main(args.model, args.train_langs, lang2tsv)
