@@ -18,7 +18,8 @@ class RegisterDataset(Dataset):
     def __getitem__(self, index : int):
         encoded_text = self.encoded_texts[index]
         register = self.registers[index]
-        return {**encoded_text, 'labels' : torch.tensor(register, dtype=torch.long)}
+        encoded_text['labels'] = torch.tensor(register, dtype=torch.long)
+        return encoded_text
 
 
 def load_data(filepath : str, model_checkpoint : str, batch_size : int=16) -> DataLoader:
@@ -26,7 +27,7 @@ def load_data(filepath : str, model_checkpoint : str, batch_size : int=16) -> Da
     tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
     
     texts = dataset.iloc[:,1].tolist()
-    encoded_texts = tokenizer(texts, return_tensors="pt", padding="max_length", truncation=True)
+    encoded_texts = tokenizer(texts, return_tensors='pt', padding='max_length', truncation=True)
     regs = dataset.iloc[:,0].tolist()
     regs = [REG2ID[reg] for reg in regs]
     
