@@ -14,5 +14,9 @@ HF_HUB_OFFLINE=1
 module load python/python-3.11.3
 source /home2020/home/lilpa/harbison/experiences/env/bin/activate
 
-python finetune.py --model mbert --train_langs fr
-echo "FINETUNING COMPLETE"
+model=mbert
+lang=fr
+
+echo "finetuning $model on $lang"
+python finetune.py --model $model --train_langs $lang
+echo "finetuning complete"
