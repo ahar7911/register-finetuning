@@ -31,7 +31,7 @@ def evaluate(model : transformers.PreTrainedModel, test_dataloader : DataLoader,
     with open(output_filepath, 'w') as file:
         json.dump(metric_summary, file, indent=4)
         
-    reset_metrics()
+    reset_metrics(metrics)
 
 def main(model_name : str, train_langs : str, eval_lang : str, lang2tsv : dict[str, str]):
     with open('utils/model2chckpt.json') as file:
