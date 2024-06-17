@@ -48,7 +48,11 @@ def main(model_name : str, train_langs : str, eval_lang : str, lang2tsv : dict[s
 
     test_dataloader = load_data(eval_lang_tsv, checkpoint, batch_size=64)
     metrics = get_metrics(num_labels, device)
-    output_filepath = f'output/{model_name}-{train_langs if train_langs else ""}-eval-{eval_lang}.json'
+    if train_langs is not None:
+        output_filepath = f'output/{model_name}-{train_langs}-eval-{eval_lang}.json'
+    else:
+        output_filepath = f'output/{model_name}-eval-{eval_lang}.json'
+    
 
     evaluate(classifier, test_dataloader, device, metrics, output_filepath)
     
