@@ -8,7 +8,7 @@ REGISTERS = ['IN', 'IP/OP', 'RN', 'JN', 'HI', 'LY', 'NID', 'AID']
 REG2ID = {reg : REGISTERS.index(reg) for reg in REGISTERS}
 
 class RegisterDataset(Dataset):
-    def __init__(self, encoded_texts : list[dict[str, torch.Tensor]], registers : list[int]):
+    def __init__(self, encoded_texts : dict[str, list[torch.Tensor]], registers : list[int]):
         self.encoded_texts = encoded_texts
         self.registers = registers
 
