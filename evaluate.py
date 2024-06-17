@@ -32,7 +32,7 @@ def evaluate(model : transformers.PreTrainedModel, test_dataloader : DataLoader,
         metric_summary = {**metric_summary, name : metric.compute()}
 
     with open(output_filepath, 'w') as file:
-        json.dump(file, metric_summary)
+        json.dump(metric_summary, file, indent=4)
         
     for metric in metrics.values():
         metric.reset()

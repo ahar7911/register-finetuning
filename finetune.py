@@ -50,7 +50,7 @@ def train(model : transformers.PreTrainedModel, train_dataloader : DataLoader, n
             metric.reset()
     
     with open(output_file_str, 'w') as file:
-        json.dump(file, train_summary)
+        json.dump(train_summary, file, indent=4)
 
 
 def main(model_name : str, train_langs : str, lang2tsv : dict[str, str], num_epochs=4):
