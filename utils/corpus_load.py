@@ -27,10 +27,10 @@ def load_data(filepath : str, model_checkpoint : str, is_train : bool=False, bat
     
     texts = dataset.iloc[:,1].tolist()
     encoded_texts = dict(tokenizer(texts, return_tensors='pt', padding='max_length', truncation=True))
-    regs = dataset.iloc[:,0].tolist()
-    regs = [REG2ID[reg] for reg in regs]
+    registers = dataset.iloc[:,0].tolist()
+    registers = [REG2ID[reg] for reg in registers]
     
-    dataset = RegisterDataset(encoded_texts, regs)
+    dataset = RegisterDataset(encoded_texts, registers)
     dataloader = DataLoader(dataset, shuffle=is_train, batch_size=batch_size)
 
     return dataloader
