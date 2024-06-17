@@ -46,7 +46,7 @@ def main(model_name : str, train_langs : str, eval_lang : str, lang2tsv : dict[s
     classifier = AutoModelForSequenceClassification.from_pretrained(f'./models/mbert-{train_langs}')
     classifier.to(device)
 
-    test_dataloader = load_data(eval_lang_tsv, checkpoint, local=True, batch_size=64)
+    test_dataloader = load_data(eval_lang_tsv, checkpoint, batch_size=64)
     metrics = get_metrics(num_classes, device)
 
     evaluate(classifier, test_dataloader, device, metrics, output_filepath)

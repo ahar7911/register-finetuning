@@ -35,14 +35,14 @@ class RegisterDataset(Dataset):
             'labels': torch.tensor(register, dtype=torch.long)}
 
 
-def load_data(filepath : str, model_checkpoint : str, local : bool=False, batch_size : int=16) -> DataLoader:
+def load_data(filepath : str, model_checkpoint : str, batch_size : int=16) -> DataLoader:
     dataset = pd.read_csv(filepath, sep='\t')
     
     X_texts = dataset.iloc[:,1].tolist()
     y_regs = dataset.iloc[:,0].tolist()
     y_regs = [REG2ID[reg] for reg in y_regs]
 
-    tokenizer = AutoTokenizer.from_pretrained(model_checkpoint, local_files_only=local)
+    tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
     dataset = RegisterDataset(texts=X_texts, registers=y_regs, tokenizer=tokenizer)
     dataloader = DataLoader(dataset, batch_size=batch_size)
 
