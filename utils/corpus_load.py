@@ -21,7 +21,7 @@ class RegisterDataset(Dataset):
         return {**encoded_text, 'labels': torch.tensor(register)}
 
 
-def load_data(filepath : str, model_checkpoint : str, batch_size : int=16) -> DataLoader:
+def load_data(filepath : str, model_checkpoint : str, is_train : bool=False, batch_size : int=16) -> DataLoader:
     dataset = pd.read_csv(filepath, sep='\t')
     tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
     
@@ -31,6 +31,6 @@ def load_data(filepath : str, model_checkpoint : str, batch_size : int=16) -> Da
     regs = [REG2ID[reg] for reg in regs]
     
     dataset = RegisterDataset(encoded_texts, regs)
-    dataloader = DataLoader(dataset, batch_size=batch_size)
+    dataloader = DataLoader(dataset, shuffle=is_train, batch_size=batch_size)
 
     return dataloader

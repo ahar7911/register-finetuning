@@ -54,7 +54,7 @@ def main(model_name : str, train_langs : str, lang2tsv : dict[str, str], num_epo
     classifier = AutoModelForSequenceClassification.from_pretrained(checkpoint, num_labels=num_labels)
     classifier.to(device)
 
-    train_dataloader = load_data(train_lang_tsv, checkpoint, batch_size=16)
+    train_dataloader = load_data(train_lang_tsv, checkpoint, is_train=True, batch_size=16)
     optimizer = torch.optim.AdamW(classifier.parameters(), lr=5e-5)
     lr_scheduler = get_scheduler(
         "linear",
