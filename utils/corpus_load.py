@@ -26,7 +26,7 @@ def load_data(filepath : str, model_checkpoint : str, batch_size : int=16) -> Da
     tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
     
     texts = dataset.iloc[:,1].tolist()
-    encoded_texts = dict(tokenizer(texts, return_tensors='pt', padding='max_length', truncation=True))
+    encoded_texts = dict(tokenizer(texts, return_token_type_ids=False, return_tensors='pt', padding='max_length', truncation=True))
     regs = dataset.iloc[:,0].tolist()
     regs = [REG2ID[reg] for reg in regs]
     
