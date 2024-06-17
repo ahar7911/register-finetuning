@@ -10,7 +10,7 @@
 #SBATCH --error=output/error.txt
 #SBATCH --output=output/output.txt
 
-TRANSFORMERS_OFFLINE=1
+HF_HUB_OFFLINE=1
 module load python/python-3.11.3
 source /home2020/home/lilpa/harbison/experiences/env/bin/activate
 

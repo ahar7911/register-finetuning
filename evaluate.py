@@ -34,9 +34,13 @@ def evaluate(model : transformers.PreTrainedModel, test_dataloader : DataLoader,
     for metric in metrics.values():
         metric.reset()
 
-def main(model_path : str, lang_tsv : str):
-    model = AutoModelForSequenceClassification.from_pretrained(model_path)
-    test_dataloader = load_data(lang_tsv, model_path, local=True, batch_size=64)
+def main(model : str, train_langs : str, eval_lang_tsv : str):
+    with open('utils/model2chckpt.json') as file:
+        model2chckpt = json.load(file)
+    checkpoint = model2chckpt[model]
+    
+    model = AutoModelForSequenceClassification.from_pretrained(f'.models/mbert-{train_langs}')
+    test_dataloader = load_data(eval_lang_tsv, checkpoint, local=True, batch_size=64)
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     metrics = get_metrics()
 
@@ -50,10 +54,12 @@ if __name__ == '__main__':
     parser = ArgumentParser(prog="Evaluate register classification",
                             description="Given a model and a language, evaluates the model's ability to classify registers in that language")
     parser.add_argument('--model', required=True,
-                        help='Local path to fine-tuned model to evaluate')
-    parser.add_argument('--lang', choices=lang2tsv.keys(), required=True,
+                        help='Name of fine-tuned model to evaluate')
+    parser.add_argument('--train_langs', required=True,
+                        help='Languages model was fine-tuned on')
+    parser.add_argument('--eval_lang', choices=lang2tsv.keys(), required=True,
                         help='Language to evaluate fine-tuned model on')
     args = parser.parse_args()
     
-    lang_tsv = lang2tsv[args.lang]
-    main(args.model, lang_tsv)
+    eval_lang_tsv = lang2tsv[args.eval_lang]
+    main(args.model, args.train_langs, eval_lang_tsv)
