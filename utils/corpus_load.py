@@ -18,7 +18,7 @@ class RegisterDataset(Dataset):
     def __getitem__(self, index : int):
         encoded_text = {k : v[index] for k, v in self.encoded_texts.items()}
         register = self.registers[index]
-        return {**encoded_text, 'labels': torch.tensor(register, dtype=torch.long)}
+        return {**encoded_text, 'labels': torch.tensor(register)}
 
 
 def load_data(filepath : str, model_checkpoint : str, batch_size : int=16) -> DataLoader:
