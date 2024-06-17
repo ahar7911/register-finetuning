@@ -5,8 +5,6 @@
 #SBATCH -N 1
 #SBATCH --exclusive
 #SBATCH --time 00:59:00
-#SBATCH --mail-type=END
-#SBATCH --mail-user=harbison@unistra.fr
 #SBATCH --error=output/error.txt
 #SBATCH --output=output/output.txt
 
