@@ -54,23 +54,21 @@ def train(model : transformers.PreTrainedModel, train_dataloader : DataLoader, n
         json.dump(file, train_summary)
 
 
-def main(model : str, train_langs : str, lang2tsv : dict[str, str], num_epochs=4):
+def main(model_name : str, train_langs : str, lang2tsv : dict[str, str], num_epochs=4):
     with open('utils/model2chckpt.json') as file:
         model2chckpt = json.load(file)
-    checkpoint = model2chckpt[model]
+    checkpoint = model2chckpt[model_name]
 
     num_classes = len(REGISTERS)
     train_lang_tsv = lang2tsv[train_langs]
     output_filepath = f'output/output-{train_langs}.json'
-
-    train_dataloader = load_data(train_lang_tsv, checkpoint, batch_size=16)
+    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
     classifier = AutoModelForSequenceClassification.from_pretrained(checkpoint, num_labels=num_classes)
-    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     classifier.to(device)
 
+    train_dataloader = load_data(train_lang_tsv, checkpoint, batch_size=16)
     metrics = get_metrics(num_classes, device)
-
     optimizer = torch.optim.AdamW(classifier.parameters(), lr=5e-5)
     lr_scheduler = get_scheduler(
         "linear",

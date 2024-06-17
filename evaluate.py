@@ -37,21 +37,23 @@ def evaluate(model : transformers.PreTrainedModel, test_dataloader : DataLoader,
     for metric in metrics.values():
         metric.reset()
 
-def main(model : str, train_langs : str, eval_lang : str, lang2tsv : dict[str, str]):
+def main(model_name : str, train_langs : str, eval_lang : str, lang2tsv : dict[str, str]):
     with open('utils/model2chckpt.json') as file:
         model2chckpt = json.load(file)
-    checkpoint = model2chckpt[model]
+    checkpoint = model2chckpt[model_name]
 
     num_classes = len(REGISTERS)
     eval_lang_tsv = lang2tsv[eval_lang]
     output_filepath = f'output/output-{train_langs}-{eval_lang}.json'
-    
-    model = AutoModelForSequenceClassification.from_pretrained(f'./models/mbert-{train_langs}')
-    test_dataloader = load_data(eval_lang_tsv, checkpoint, local=True, batch_size=64)
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+    
+    classifier = AutoModelForSequenceClassification.from_pretrained(f'./models/mbert-{train_langs}')
+    classifier.to(device)
+
+    test_dataloader = load_data(eval_lang_tsv, checkpoint, local=True, batch_size=64)
     metrics = get_metrics(num_classes, device)
 
-    evaluate(model, test_dataloader, device, metrics, output_filepath)
+    evaluate(classifier, test_dataloader, device, metrics, output_filepath)
     
 
 if __name__ == '__main__':
