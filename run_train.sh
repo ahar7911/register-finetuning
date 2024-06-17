@@ -12,7 +12,7 @@ module load python/python-3.11.3
 source /home2020/home/lilpa/harbison/experiences/env/bin/activate
 
 model=mbert
-lang=fr
+lang=sw
 
 echo "finetuning $model on $lang"
 python finetune.py --model $model --train_langs $lang
