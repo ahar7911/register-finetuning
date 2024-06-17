@@ -19,7 +19,7 @@ class RegisterDataset(Dataset):
     def __getitem__(self, index : int):
         text = str(self.texts[index])
         register = self.registers[index]
-        encoded_text = self.tokenizer(text, return_tensors = "pt", padding = "max_length")
+        encoded_text = self.tokenizer(text, return_tensors = "pt", padding = "max_length", truncation=True)
         return {**encoded_text, 'labels' : torch.tensor(register, dtype=torch.long)}
 
 
