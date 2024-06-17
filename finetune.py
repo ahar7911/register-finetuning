@@ -19,7 +19,6 @@ from utils.metrics import get_metrics
 def train(model : transformers.PreTrainedModel, train_dataloader : DataLoader, num_epochs: int, 
           device : torch.device, optimizer : torch.optim.Optimizer, lr_scheduler, metrics : dict[str, torchmetrics.Metric],
           output_file_str : str):
-    print('TRAINING')
     train_summary = {}
     for epoch in range(num_epochs):
         model.train()
@@ -61,7 +60,7 @@ def main(model_name : str, train_langs : str, lang2tsv : dict[str, str], num_epo
 
     num_classes = len(REGISTERS)
     train_lang_tsv = lang2tsv[train_langs]
-    output_filepath = f'output/output-{train_langs}.json'
+    output_filepath = f'output/train-{model_name}-{train_langs}.json'
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
     classifier = AutoModelForSequenceClassification.from_pretrained(checkpoint, num_labels=num_classes)

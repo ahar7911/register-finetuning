@@ -44,7 +44,7 @@ def main(model_name : str, train_langs : str, eval_lang : str, lang2tsv : dict[s
 
     num_classes = len(REGISTERS)
     eval_lang_tsv = lang2tsv[eval_lang]
-    output_filepath = f'output/output-{train_langs}-{eval_lang}.json'
+    output_filepath = f'output/eval-{model_name}-{train_langs}-{eval_lang}.json'
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     
     classifier = AutoModelForSequenceClassification.from_pretrained(f'./models/mbert-{train_langs}')
