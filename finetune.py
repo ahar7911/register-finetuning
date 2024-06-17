@@ -13,8 +13,6 @@ import torchmetrics
 from utils.corpus_load import load_data, REGISTERS
 from utils.metrics import get_metrics, add_batch, get_metric_summary, reset_metrics
 
-#TODO arguments, early stopping and checkpointing
-
 def train(model : transformers.PreTrainedModel, train_dataloader : DataLoader, num_epochs: int, 
           device : torch.device, optimizer : torch.optim.Optimizer, lr_scheduler : torch.optim.lr_scheduler.LambdaLR, 
           metrics : dict[str, torchmetrics.Metric], output_file_str : str):
@@ -86,7 +84,7 @@ if __name__ == '__main__':
                         help="Language(s) to finetune register on")
     parser.add_argument('--num_epochs',
                         help='Number of epochs to finetune model for')
-    parser.add_argument('-freeze', action='store_true', 
+    parser.add_argument('--freeze', action='store_true', 
                         help='Freeze all model layers except last couple and classification head')
     args = parser.parse_args()
 
