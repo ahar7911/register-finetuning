@@ -11,10 +11,9 @@ from transformers import AutoModelForSequenceClassification, get_scheduler
 import torchmetrics
 
 from utils.corpus_load import load_data, REGISTERS
-from utils.metrics import get_metrics
+from utils.metrics import get_metrics, add_batch, get_metric_summary, reset_metrics
 
 #TODO arguments, early stopping and checkpointing
-
 
 def train(model : transformers.PreTrainedModel, train_dataloader : DataLoader, num_epochs: int, 
           device : torch.device, optimizer : torch.optim.Optimizer, lr_scheduler, metrics : dict[str, torchmetrics.Metric],
@@ -30,8 +29,7 @@ def train(model : transformers.PreTrainedModel, train_dataloader : DataLoader, n
             outputs = model(**batch)
 
             preds = torch.argmax(outputs.logits, dim=-1)
-            for metric in metrics.values():
-                metric(preds, batch['labels'])
+            add_batch(metrics, preds, batch['labels'])
 
             loss = outputs.loss
             loss.backward()
@@ -41,13 +39,9 @@ def train(model : transformers.PreTrainedModel, train_dataloader : DataLoader, n
 
             optimizer.zero_grad()
 
-        metric_summary = {}
-        for name, metric in metrics.items():
-            metric_summary = {**metric_summary, name : metric.compute()}
-        train_summary[epoch_str] = metric_summary
+        train_summary[epoch_str] = get_metric_summary(metrics)
         
-        for metric in metrics.values():
-            metric.reset()
+        reset_metrics()
     
     with open(output_file_str, 'w') as file:
         json.dump(train_summary, file, indent=4)

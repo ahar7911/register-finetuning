@@ -9,7 +9,7 @@ import torchmetrics
 from torch.utils.data import DataLoader
 
 from utils.corpus_load import load_data, REGISTERS
-from utils.metrics import get_metrics
+from utils.metrics import get_metrics, add_batch, get_metric_summary, reset_metrics
 
 def evaluate(model : transformers.PreTrainedModel, test_dataloader : DataLoader, 
              device : torch.device, metrics : dict[str, torchmetrics.Metric],
@@ -24,18 +24,14 @@ def evaluate(model : transformers.PreTrainedModel, test_dataloader : DataLoader,
         outputs = outputs.logits
         preds = torch.argmax(outputs, dim=-1)
         
-        for metric in metrics.values():
-            metric(preds, batch['labels'])
+        add_batch(metrics, preds, batch['labels'])
     
-    metric_summary = {}
-    for name, metric in metrics.items():
-        metric_summary = {**metric_summary, name : metric.compute()}
+    metric_summary = get_metric_summary(metrics)
 
     with open(output_filepath, 'w') as file:
         json.dump(metric_summary, file, indent=4)
         
-    for metric in metrics.values():
-        metric.reset()
+    reset_metrics()
 
 def main(model_name : str, train_langs : str, eval_lang : str, lang2tsv : dict[str, str]):
     with open('utils/model2chckpt.json') as file:
