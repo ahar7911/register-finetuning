@@ -16,18 +16,18 @@ from utils.metrics import get_metrics, add_batch, get_metric_summary, reset_metr
 #TODO arguments, early stopping and checkpointing
 
 def train(model : transformers.PreTrainedModel, train_dataloader : DataLoader, num_epochs: int, 
-          device : torch.device, optimizer : torch.optim.Optimizer, lr_scheduler, metrics : dict[str, torchmetrics.Metric],
-          output_file_str : str):
+          device : torch.device, optimizer : torch.optim.Optimizer, lr_scheduler : torch.optim.lr_scheduler.LambdaLR, 
+          metrics : dict[str, torchmetrics.Metric], output_file_str : str):
     train_summary = {}
     for epoch in range(num_epochs):
         model.train()
         epoch_str = f'epoch {epoch + 1}'
 
         print(f"{epoch_str} training")
-        for i, batch in enumerate(train_dataloader):
+        for batch in train_dataloader:
             batch = {k: v.to(device) for k, v in batch.items()}
+            
             outputs = model(**batch)
-
             preds = torch.argmax(outputs.logits, dim=-1)
             add_batch(metrics, preds, batch['labels'])
 
