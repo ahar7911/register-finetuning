@@ -79,7 +79,7 @@ if __name__ == '__main__':
                         help="LLM to finetune")
     parser.add_argument('--train_langs', choices=lang2tsv.keys(), required=True,
                         help="Language(s) to finetune register classification on")
-    parser.add_argument('--num_epochs', default=4
+    parser.add_argument('--num_epochs', default=4,
                         help='Number of epochs to finetune model for.')
     parser.add_argument('--freeze', action='store_true', 
                         help='Freeze all model layers except last couple and classification head')
