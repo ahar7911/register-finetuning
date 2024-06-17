@@ -1,5 +1,4 @@
 from argparse import ArgumentParser
-
 import json
 
 import transformers
@@ -22,8 +21,6 @@ def evaluate(model : transformers.PreTrainedModel, test_dataloader : DataLoader,
             outputs = model(**batch)
         
         outputs = outputs.logits
-        print(outputs.shape)
-        print(outputs)
         preds = torch.argmax(outputs, dim=-1)
         add_batch(metrics, preds, batch['labels'])
     
@@ -43,8 +40,10 @@ def main(model_name : str, train_langs : str, eval_lang : str, lang2tsv : dict[s
     eval_lang_tsv = lang2tsv[eval_lang]
 
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-    load_from = f'./models/mbert-{train_langs}' if train_langs else checkpoint
-    classifier = AutoModelForSequenceClassification.from_pretrained(load_from)
+    if train_langs is not None:
+        classifier = AutoModelForSequenceClassification.from_pretrained(f'./models/mbert-{train_langs}')
+    else:
+        classifier = AutoModelForSequenceClassification.from_pretrained(checkpoint, num_classes=num_classes)
     classifier.to(device)
 
     test_dataloader = load_data(eval_lang_tsv, checkpoint, batch_size=64)
