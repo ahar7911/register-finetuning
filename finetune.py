@@ -32,7 +32,7 @@ def train(model : transformers.PreTrainedModel, train_dataloader : DataLoader, n
 
             optimizer.step()
             lr_scheduler.step()
-            
+
             optimizer.zero_grad()
 
         train_summary[epoch_str] = get_metric_summary(metrics)
@@ -42,7 +42,7 @@ def train(model : transformers.PreTrainedModel, train_dataloader : DataLoader, n
         json.dump(train_summary, file, indent=4)
 
 
-def main(model_name : str, train_langs : str, lang2tsv : dict[str, str], num_epochs=4):
+def main(model_name : str, train_langs : str, lang2tsv : dict[str, str], num_epochs : int):
     with open('utils/model2chckpt.json') as file:
         model2chckpt = json.load(file)
     checkpoint = model2chckpt[model_name]
@@ -79,8 +79,8 @@ if __name__ == '__main__':
                         help="LLM to finetune")
     parser.add_argument('--train_langs', choices=lang2tsv.keys(), required=True,
                         help="Language(s) to finetune register classification on")
-    parser.add_argument('--num_epochs',
-                        help='Number of epochs to finetune model for. Default is 4')
+    parser.add_argument('--num_epochs', default=4
+                        help='Number of epochs to finetune model for.')
     parser.add_argument('--freeze', action='store_true', 
                         help='Freeze all model layers except last couple and classification head')
     args = parser.parse_args()
