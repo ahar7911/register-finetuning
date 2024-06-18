@@ -7,7 +7,7 @@ import torch
 import torchmetrics
 from torch.utils.data import DataLoader
 
-from utils.corpus_load import load_data, REGISTERS
+from utils.corpus_load import load_data, REGISTERS, CORPUS_FILEPATH
 from utils.metrics import get_metrics, add_batch, get_metric_summary, reset_metrics
 
 def evaluate(model : transformers.PreTrainedModel, test_dataloader : DataLoader, 
@@ -31,13 +31,13 @@ def evaluate(model : transformers.PreTrainedModel, test_dataloader : DataLoader,
         
     reset_metrics(metrics)
 
-def main(model_name : str, train_langs : str, eval_lang : str, lang2tsv : dict[str, str]):
+def main(model_name : str, train_langs : str, eval_lang : str):
     with open('utils/model2chckpt.json') as file:
         model2chckpt = json.load(file)
     checkpoint = model2chckpt[model_name]
 
     num_labels = len(REGISTERS)
-    eval_lang_tsv = lang2tsv[eval_lang]
+    eval_lang_tsv = f"{CORPUS_FILEPATH}/{train_langs}.tsv"
 
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     if train_langs is not None:
@@ -58,17 +58,14 @@ def main(model_name : str, train_langs : str, eval_lang : str, lang2tsv : dict[s
     
 
 if __name__ == '__main__':
-    with open('utils/lang2tsv.json') as file:
-        lang2tsv = json.load(file)
-    
     parser = ArgumentParser(prog="Evaluate register classification",
                             description="Evaluates multilingual model's ability to classify registers in one language")
     parser.add_argument('--model', required=True,
                         help='Name of model to evaluate')
     parser.add_argument('--train_langs',
                         help='Language(s) model was fine-tuned on; untrained model used if not specified')
-    parser.add_argument('--eval_lang', choices=lang2tsv.keys(), required=True,
+    parser.add_argument('--eval_lang', required=True,
                         help='Language to evaluate fine-tuned model on')
     args = parser.parse_args()
     
-    main(args.model, args.train_langs, args.eval_lang, lang2tsv)
+    main(args.model, args.train_langs, args.eval_lang)

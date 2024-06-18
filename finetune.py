@@ -7,7 +7,7 @@ import transformers
 from transformers import AutoModelForSequenceClassification, get_scheduler
 import torchmetrics
 
-from utils.corpus_load import load_data, REGISTERS
+from utils.corpus_load import load_data, REGISTERS, CORPUS_FILEPATH
 from utils.metrics import get_metrics, add_batch, get_metric_summary, reset_metrics
 
 def train(model : transformers.PreTrainedModel, train_dataloader : DataLoader, num_epochs: int, 
@@ -42,13 +42,13 @@ def train(model : transformers.PreTrainedModel, train_dataloader : DataLoader, n
         json.dump(train_summary, file, indent=4)
 
 
-def main(model_name : str, train_langs : str, lang2tsv : dict[str, str], num_epochs : int):
+def main(model_name : str, train_langs : str, num_epochs : int):
     with open('utils/model2chckpt.json') as file:
         model2chckpt = json.load(file)
     checkpoint = model2chckpt[model_name]
 
     num_labels = len(REGISTERS)
-    train_lang_tsv = lang2tsv[train_langs]
+    train_lang_tsv = f"{CORPUS_FILEPATH}/{train_langs}.tsv"
 
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     classifier = AutoModelForSequenceClassification.from_pretrained(checkpoint, num_labels=num_labels)
@@ -70,14 +70,11 @@ def main(model_name : str, train_langs : str, lang2tsv : dict[str, str], num_epo
 
 
 if __name__ == '__main__':
-    with open('utils/lang2tsv.json') as file:
-        lang2tsv = json.load(file)
-    
     parser = ArgumentParser(prog='Register fine-tuning',
                             description='Fine-tuning LLMs for multilingual classification of registers')
     parser.add_argument('--model', choices=["mbert", "xlm-r", "glot500"], required=True,
                         help="LLM to finetune")
-    parser.add_argument('--train_langs', choices=lang2tsv.keys(), required=True,
+    parser.add_argument('--train_langs', required=True,
                         help="Language(s) to finetune register classification on")
     parser.add_argument('--num_epochs', default=4,
                         help='Number of epochs to finetune model for.')
@@ -86,6 +83,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.num_epochs is not None:
-        main(args.model, args.train_langs, lang2tsv, args.num_epochs)
+        main(args.model, args.train_langs, args.num_epochs)
     else:
-        main(args.model, args.train_langs, lang2tsv)
+        main(args.model, args.train_langs)

@@ -6,6 +6,7 @@ from transformers import AutoTokenizer
 
 REGISTERS = ['IN', 'IP/OP', 'RN', 'JN', 'HI', 'LY', 'NID', 'AID']
 REG2ID = {reg : REGISTERS.index(reg) for reg in REGISTERS}
+CORPUS_FILEPATH = "../register-corpus/corpus"
 
 class RegisterDataset(Dataset):
     def __init__(self, encoded_texts : dict[str, list[torch.Tensor]], registers : list[int]):
@@ -22,7 +23,10 @@ class RegisterDataset(Dataset):
 
 
 def load_data(filepath : str, model_checkpoint : str, is_train : bool=False, batch_size : int=16) -> DataLoader:
-    dataset = pd.read_csv(filepath, sep='\t')
+    try:
+        dataset = pd.read_csv(filepath, sep='\t')
+    except FileNotFoundError:
+        print("Corpus file not found, incorrect language specification")
     tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
     
     texts = dataset.iloc[:,1].tolist()
