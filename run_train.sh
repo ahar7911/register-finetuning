@@ -14,12 +14,12 @@ source /home2020/home/lilpa/harbison/experiences/env/bin/activate
 models=("mbert" "xlm-r" "glot500")
 lang=("en" "fi" "fr" "sw")
 
-for model in "${models[@]}"
-do
-    for lang in "${langs[@]}"
-    echo "finetuning $model on $lang"
-    time python finetune.py --model $model --train_langs $lang
-    echo "finetuning $model on $lang complete"
+for model in "${models[@]}"; do
+    for lang in "${langs[@]}"; do
+        echo "finetuning $model on $lang"
+        time python finetune.py --model $model --train_langs $lang
+        echo "finetuning $model on $lang complete"
+    done
 done
 
 echo "finetuning complete"
