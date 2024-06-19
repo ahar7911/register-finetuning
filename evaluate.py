@@ -37,7 +37,7 @@ def main(model_name : str, train_langs : str, eval_lang : str):
     checkpoint = model2chckpt[model_name]
 
     num_labels = len(REGISTERS)
-    eval_lang_tsv = f"{CORPUS_FILEPATH}/{train_langs}.tsv"
+    eval_lang_tsv = f"{CORPUS_FILEPATH}/test/{eval_lang}.tsv"
 
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     if train_langs is not None:

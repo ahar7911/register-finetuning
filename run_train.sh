@@ -11,9 +11,15 @@
 module load python/python-3.11.3
 source /home2020/home/lilpa/harbison/experiences/env/bin/activate
 
-model=mbert
-lang=sw
+models=("mbert" "xlm-r" "glot500")
+lang=("en" "fi" "fr" "sw")
 
-echo "finetuning $model on $lang"
-time python finetune.py --model $model --train_langs $lang
+for model in "${models[@]}"
+do
+    for lang in "${langs[@]}"
+    echo "finetuning $model on $lang"
+    time python finetune.py --model $model --train_langs $lang
+    echo "finetuning $model on $lang complete"
+done
+
 echo "finetuning complete"

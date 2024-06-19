@@ -48,7 +48,7 @@ def main(model_name : str, train_langs : str, num_epochs : int):
     checkpoint = model2chckpt[model_name]
 
     num_labels = len(REGISTERS)
-    train_lang_tsv = f"{CORPUS_FILEPATH}/{train_langs}.tsv"
+    train_lang_tsv = f"{CORPUS_FILEPATH}/train/{train_langs}.tsv"
 
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     classifier = AutoModelForSequenceClassification.from_pretrained(checkpoint, num_labels=num_labels)
