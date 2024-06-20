@@ -60,7 +60,7 @@ def main(model_name : str, train_langs : str, eval_lang : str):
 if __name__ == '__main__':
     parser = ArgumentParser(prog="Evaluate register classification",
                             description="Evaluates multilingual model's ability to classify registers in one language")
-    parser.add_argument('--model', required=True,
+    parser.add_argument('--model', choices=["mbert", "xlm-r", "glot500"], required=True,
                         help='Name of model to evaluate')
     parser.add_argument('--train_langs',
                         help='Language(s) model was fine-tuned on; untrained model used if not specified')

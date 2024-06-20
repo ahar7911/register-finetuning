@@ -66,7 +66,7 @@ def main(model_name : str, train_langs : str, num_epochs : int):
     output_filepath = f'output/{model_name}-train-{train_langs}.json'
 
     train(classifier, train_dataloader, num_epochs, device, optimizer, lr_scheduler, metrics, output_filepath)
-    classifier.save_pretrained(f'./models/mbert-{train_langs}/', from_pt=True)
+    classifier.save_pretrained(f'./models/{model_name}-{train_langs}/', from_pt=True)
 
 
 if __name__ == '__main__':
