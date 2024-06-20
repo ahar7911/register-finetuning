@@ -1,3 +1,4 @@
+import sys
 import pandas as pd
 
 import torch
@@ -25,8 +26,9 @@ class RegisterDataset(Dataset):
 def load_data(filepath : str, model_checkpoint : str, is_train : bool=False, batch_size : int=16) -> DataLoader:
     try:
         dataset = pd.read_csv(filepath, sep='\t')
-    except FileNotFoundError:
-        print("Corpus file not found, incorrect language specification")
+    except FileNotFoundError as e:
+        print(f"{str(e)}: Corpus file not found, incorrect language specification", file=sys.stderr)
+        sys.exit(1)
     tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
     
     texts = dataset.iloc[:,1].tolist()

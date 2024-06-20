@@ -41,7 +41,7 @@ def main(model_name : str, train_langs : str, eval_lang : str):
 
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     if train_langs is not None:
-        classifier = AutoModelForSequenceClassification.from_pretrained(f'./models/mbert-{train_langs}')
+        classifier = AutoModelForSequenceClassification.from_pretrained(f'./models/{model_name}-{train_langs}')
     else:
         classifier = AutoModelForSequenceClassification.from_pretrained(checkpoint, num_labels=num_labels)
     classifier.to(device)
