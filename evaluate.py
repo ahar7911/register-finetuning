@@ -40,18 +40,12 @@ def main(model_name : str, train_langs : str, eval_lang : str):
     eval_lang_tsv = f"{CORPUS_FILEPATH}/test/{eval_lang}.tsv"
 
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-    if train_langs is not None:
-        classifier = AutoModelForSequenceClassification.from_pretrained(f'./models/{model_name}-{train_langs}')
-    else:
-        classifier = AutoModelForSequenceClassification.from_pretrained(checkpoint, num_labels=num_labels)
+    classifier = AutoModelForSequenceClassification.from_pretrained(f'./models/{model_name}-{train_langs}')
     classifier.to(device)
 
     test_dataloader = load_data(eval_lang_tsv, checkpoint, batch_size=64)
     metrics = get_metrics(num_labels, device)
-    if train_langs is not None:
-        output_filepath = f'output/{model_name}-{train_langs}-eval-{eval_lang}.json'
-    else:
-        output_filepath = f'output/{model_name}-eval-{eval_lang}.json'
+    output_filepath = f'output/{model_name}/{train_langs}/eval/{eval_lang}.json'
     
 
     evaluate(classifier, test_dataloader, device, metrics, output_filepath)
@@ -62,7 +56,7 @@ if __name__ == '__main__':
                             description="Evaluates multilingual model's ability to classify registers in one language")
     parser.add_argument('--model', choices=["mbert", "xlm-r", "glot500"], required=True,
                         help='Name of model to evaluate')
-    parser.add_argument('--train_langs',
+    parser.add_argument('--train_langs', required=True,
                         help='Language(s) model was fine-tuned on; untrained model used if not specified')
     parser.add_argument('--eval_lang', required=True,
                         help='Language to evaluate fine-tuned model on')

@@ -63,7 +63,7 @@ def main(model_name : str, train_langs : str, num_epochs : int):
         num_training_steps=len(train_dataloader) * num_epochs
     )
     metrics = get_metrics(num_labels, device)
-    output_filepath = f'output/{model_name}-train-{train_langs}.json'
+    output_filepath = f'output/{model_name}/{train_langs}/train.json'
 
     train(classifier, train_dataloader, num_epochs, device, optimizer, lr_scheduler, metrics, output_filepath)
     classifier.save_pretrained(f'./models/{model_name}-{train_langs}/', from_pt=True)
