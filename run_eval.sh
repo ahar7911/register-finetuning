@@ -21,6 +21,7 @@ for model in "${models[@]}"; do
         echo "evaluating $model trained on $train_lang"
         for eval_lang in "${eval_langs[@]}"; do
             echo "evaluating on $eval_lang"
+            mkdir -p "output/$model/$train_lang/eval"
             time python evaluate.py --model $model --train_langs $train_lang --eval_lang $eval_lang
             echo "$eval_lang complete"
         done
