@@ -4,7 +4,7 @@
 #SBATCH -p publicgpu
 #SBATCH -N 1
 #SBATCH --exclusive
-#SBATCH --time 00:59:00
+#SBATCH --time 01:59:00
 #SBATCH --error=output/err_train.txt
 #SBATCH --output=output/out_train.txt
 
@@ -12,7 +12,7 @@ module load python/python-3.11.3
 source /home2020/home/lilpa/harbison/experiences/env/bin/activate
 
 models=("mbert" "xlm-r" "glot500")
-langs=("fi" "fr" "sv")
+langs=("en")
 
 for model in "${models[@]}"; do
     for lang in "${langs[@]}"; do
@@ -21,5 +21,4 @@ for model in "${models[@]}"; do
         echo "finetuning $model on $lang complete"
     done
 done
-
 echo "finetuning complete"
