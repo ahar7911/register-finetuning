@@ -43,7 +43,7 @@ def evaluate(model : transformers.PreTrainedModel, test_dataloader : torch.utils
     df_cm = pd.DataFrame(cf_matrix / np.sum(cf_matrix, axis=1)[:, None], index=REGISTERS, columns=REGISTERS)
     plt.figure(figsize = (12,7))
     sn.heatmap(df_cm, annot=True)
-    plt.savefig(output_filepath + "{lang}.png")
+    plt.savefig(output_filepath + f"{lang}.png")
 
 def main(model_name : str, train_langs : str, eval_lang : str):
     with open("utils/model2chckpt.json") as file:
