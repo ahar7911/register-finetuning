@@ -40,8 +40,9 @@ def evaluate(model : transformers.PreTrainedModel, test_dataloader : torch.utils
         
     reset_metrics(metrics)
 
+    # modified from https://christianbernecker.medium.com/how-to-create-a-confusion-matrix-in-pytorch-38d06a7f04b7
     cf_matrix = confusion_matrix(all_labels, all_preds)
-    df_cm = pd.DataFrame(cf_matrix / np.sum(cf_matrix, axis=1)[:, None], index = REGISTERS,
+    df_cm = pd.DataFrame(cf_matrix / torch.sum(cf_matrix, axis=1)[:, None], index = REGISTERS,
                      columns = REGISTERS)
     plt.figure(figsize = (12,7))
     sn.heatmap(df_cm, annot=True)
