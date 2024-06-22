@@ -11,8 +11,8 @@
 module load python/python-3.11.3
 source /home2020/home/lilpa/harbison/experiences/env/bin/activate
 
-models=("mbert" "xlm-r" "glot500")
-train_langs=("fi" "fr" "sv")
+models=("mbert")
+train_langs=("fi")
 eval_langs=("sv")
 
 for model in "${models[@]}"; do
