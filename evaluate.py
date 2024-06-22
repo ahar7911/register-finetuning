@@ -1,4 +1,5 @@
 from argparse import ArgumentParser
+import sys
 import json
 import pandas as pd
 import numpy as np
@@ -54,7 +55,11 @@ def main(model_name : str, train_langs : str, eval_lang : str):
     eval_lang_tsv = f"{CORPUS_FILEPATH}/test/{eval_lang}.tsv"
 
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-    classifier = AutoModelForSequenceClassification.from_pretrained(f"./models/{model_name}-{train_langs}")
+    try:
+        classifier = AutoModelForSequenceClassification.from_pretrained(f"./models/{model_name}-{train_langs}")
+    except Exception as e:
+        print(f"{str(e)}\n Model not found, no saved model has been trained on specified model/language", file=sys.stderr)
+        sys.exit(1)
     classifier.to(device)
 
     test_dataloader = load_data(eval_lang_tsv, checkpoint, batch_size=64)

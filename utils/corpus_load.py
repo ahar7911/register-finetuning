@@ -27,7 +27,7 @@ def load_data(filepath : str, model_checkpoint : str, is_train : bool=False, bat
     try:
         dataset = pd.read_csv(filepath, sep='\t')
     except FileNotFoundError as e:
-        print(f"{str(e)}: Corpus file not found, incorrect language specification", file=sys.stderr)
+        print(f"{str(e)}\n Corpus file not found, incorrect language specification", file=sys.stderr)
         sys.exit(1)
     tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
     
