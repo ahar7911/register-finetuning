@@ -35,7 +35,7 @@ def evaluate(model : transformers.PreTrainedModel, test_dataloader : torch.utils
         all_preds.append(preds.cpu())
     
     metric_summary = get_metric_summary(metrics)
-    with open(output_filepath + f"{lang}.json", "w") as file:
+    with open(output_filepath + f"{lang}.json", "w+") as file:
         json.dump(metric_summary, file, indent=4)
     reset_metrics(metrics)
 

@@ -38,7 +38,7 @@ def train(model : transformers.PreTrainedModel, train_dataloader : DataLoader, n
         train_summary[epoch_str] = get_metric_summary(metrics)
         reset_metrics(metrics)
     
-    with open(output_file_str, 'w') as file:
+    with open(output_file_str, 'w+') as file:
         json.dump(train_summary, file, indent=4)
 
 
