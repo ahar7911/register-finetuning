@@ -5,7 +5,7 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 from transformers import AutoTokenizer
 
-REGISTERS = ['IN', 'IP/OP', 'RN', 'JN', 'HI', 'LY', 'NID', 'AID']
+REGISTERS = ('IN', 'IP/OP', 'RN', 'JN', 'HI', 'LY', 'NID', 'AID')
 REG2ID = {reg : REGISTERS.index(reg) for reg in REGISTERS}
 CORPUS_FILEPATH = "../register-corpus/corpus"
 
