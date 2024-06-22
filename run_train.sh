@@ -12,7 +12,7 @@ module load python/python-3.11.3
 source /home2020/home/lilpa/harbison/experiences/env/bin/activate
 
 models=("mbert" "xlm-r" "glot500")
-langs=("en")
+langs=("tr" "id")
 
 for model in "${models[@]}"; do
     for lang in "${langs[@]}"; do
