@@ -17,12 +17,11 @@ def evaluate(model : transformers.PreTrainedModel, test_dataloader : torch.utils
              device : torch.device, metrics : dict[str, torchmetrics.Metric],
              output_filepath : str, lang : str):
     model.eval()
-
     all_labels = []
     all_preds = []
+    
     for batch in test_dataloader:
         batch = {k: v.to(device) for k,v in batch.items()}
-
         with torch.no_grad():
             outputs = model(**batch)
         
@@ -34,10 +33,8 @@ def evaluate(model : transformers.PreTrainedModel, test_dataloader : torch.utils
         all_preds.extend(preds)
     
     metric_summary = get_metric_summary(metrics)
-
     with open(output_filepath + f"{lang}.json", "w") as file:
         json.dump(metric_summary, file, indent=4)
-        
     reset_metrics(metrics)
 
     # modified from https://christianbernecker.medium.com/how-to-create-a-confusion-matrix-in-pytorch-38d06a7f04b7
