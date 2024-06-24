@@ -17,7 +17,7 @@ langs=("tr" "id")
 for model in "${models[@]}"; do
     for lang in "${langs[@]}"; do
         echo "finetuning $model on $lang"
-        mkdir -p "output/{$model}/$lang"
+        mkdir -p "output/$model/$lang"
         time python finetune.py --model $model --train_langs $lang
         echo "finetuning $model on $lang complete"
     done
