@@ -3,6 +3,7 @@
 #SBATCH -A lilpa
 #SBATCH -p publicgpu
 #SBATCH -N 1
+#SBATCH --gres=gpu:2
 #SBATCH --exclusive
 #SBATCH --time 01:59:00
 #SBATCH --error=output/err_train.txt
