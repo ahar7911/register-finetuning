@@ -11,7 +11,7 @@
 module load python/python-3.11.3
 source /home2020/home/lilpa/harbison/experiences/env/bin/activate
 
-models=("mbert" "xlm-r" "glot500")
+models=("xlm-r" "glot500")
 langs=("tr" "id")
 
 for model in "${models[@]}"; do
