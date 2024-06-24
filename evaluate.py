@@ -43,6 +43,9 @@ def evaluate(model : transformers.PreTrainedModel, test_dataloader : torch.utils
     cf_matrix = confusion_matrix(torch.cat(all_labels), torch.cat(all_preds), labels=range(len(REGISTERS)))
     df_cm = pd.DataFrame(cf_matrix / np.sum(cf_matrix, axis=1)[:, None], index=REGISTERS, columns=REGISTERS)
     plt.figure(figsize = (12,7))
+    sn.heatmap(cf_matrix, annot=True)
+    plt.savefig(output_filepath + f"sample-{lang}.png")
+    plt.figure(figsize = (12,7))
     sn.heatmap(df_cm, annot=True)
     plt.savefig(output_filepath + f"{lang}.png")
 
