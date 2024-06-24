@@ -23,7 +23,7 @@ def evaluate(model : transformers.PreTrainedModel, test_dataloader : torch.utils
     all_preds = []
 
     for batch in test_dataloader:
-        batch = {k: v.to(device) for k,v in batch.items()}
+        batch = {k: v.to(device) for k, v in batch.items()}
         with torch.no_grad():
             outputs = model(**batch)
         
@@ -67,6 +67,8 @@ def main(model_name : str, train_langs : str, eval_lang : str):
     output_filepath = f"output/{model_name}/{train_langs}/eval/"
     
     evaluate(classifier, test_dataloader, device, metrics, output_filepath, eval_lang)
+
+    torch.cuda.empty_cache()
     
 
 if __name__ == "__main__":

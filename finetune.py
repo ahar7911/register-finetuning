@@ -68,6 +68,8 @@ def main(model_name : str, train_langs : str, num_epochs : int):
     train(classifier, train_dataloader, num_epochs, device, optimizer, lr_scheduler, metrics, output_filepath)
     classifier.save_pretrained(f"./models/{model_name}-{train_langs}/", from_pt=True)
 
+    torch.cuda.empty_cache()
+
 
 if __name__ == "__main__":
     parser = ArgumentParser(prog="Register fine-tuning",
