@@ -118,5 +118,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     world_size = torch.cuda.device_count()
+    for i in range(torch.cuda.device_count()):
+        print(torch.cuda.get_device_properties(i).name)
     print(f"World size: {world_size}")
-    mp.spawn(main, args=(world_size, args.model, args.train_langs, args.num_epochs), nprocs=world_size)
+    mp.spawn(main, args=(world_size, args.model, args.train_langs, args.num_epochs, args.batch_size), nprocs=world_size)
