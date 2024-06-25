@@ -82,6 +82,7 @@ def main(rank : int,
     device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
     torch.cuda.empty_cache()
     model = AutoModelForSequenceClassification.from_pretrained(checkpoint, num_labels=num_labels)
+    model.to(device)
     model = DDP(model, device_ids=[rank])
 
     train_dataset = load_data(train_lang_tsv, checkpoint)
