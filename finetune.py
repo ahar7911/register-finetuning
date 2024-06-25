@@ -29,8 +29,7 @@ def ddp_setup(rank, world_size):
 
 def train(model : DDP, 
           train_dataloader : DataLoader, 
-          num_epochs: int, 
-          device : torch.device, 
+          num_epochs: int,
           optimizer : torch.optim.Optimizer, 
           lr_scheduler : torch.optim.lr_scheduler.LambdaLR, 
           metrics : dict[str, torchmetrics.Metric], 
@@ -79,10 +78,9 @@ def main(rank : int,
     num_labels = len(REGISTERS)
     train_lang_tsv = f"/train/{train_langs}.tsv"
 
-    device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
     torch.cuda.empty_cache()
     model = AutoModelForSequenceClassification.from_pretrained(checkpoint, num_labels=num_labels)
-    model.to(device)
+    model.to(rank)
     model = DDP(model, device_ids=[rank])
 
     train_dataset = load_data(train_lang_tsv, checkpoint)
@@ -96,10 +94,10 @@ def main(rank : int,
         num_warmup_steps=50,
         num_training_steps=len(train_dataloader) * num_epochs
     )
-    metrics = get_metrics(num_labels, device)
+    metrics = get_metrics(num_labels)
     output_filepath = f"output/{model_name}/{train_langs}/train.json"
 
-    train(model, train_dataloader, num_epochs, device, optimizer, lr_scheduler, metrics, output_filepath)
+    train(model, train_dataloader, num_epochs, optimizer, lr_scheduler, metrics, output_filepath)
     model.module.save_pretrained(f"./models/{model_name}-{train_langs}/", from_pt=True)
 
     destroy_process_group()
