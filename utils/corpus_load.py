@@ -2,7 +2,7 @@ import sys
 import pandas as pd
 
 import torch
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset
 from transformers import AutoTokenizer
 
 REGISTERS = ('IN', 'IP/OP', 'RN', 'JN', 'HI', 'LY', 'NID', 'AID')
@@ -23,7 +23,7 @@ class RegisterDataset(Dataset):
         return {**encoded_text, 'labels': torch.tensor(register)}
 
 
-def load_data(filepath : str, model_checkpoint : str, is_train : bool=False, batch_size : int=16) -> DataLoader:
+def load_data(filepath : str, model_checkpoint : str) -> Dataset:
     try:
         dataset = pd.read_csv(filepath, sep='\t')
     except FileNotFoundError as e:
@@ -36,7 +36,4 @@ def load_data(filepath : str, model_checkpoint : str, is_train : bool=False, bat
     registers = dataset.iloc[:,0].tolist()
     registers = [REG2ID[reg] for reg in registers]
     
-    dataset = RegisterDataset(encoded_texts, registers)
-    dataloader = DataLoader(dataset, shuffle=is_train, batch_size=batch_size)
-
-    return dataloader
+    return RegisterDataset(encoded_texts, registers)

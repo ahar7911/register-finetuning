@@ -5,6 +5,7 @@ import json
 import transformers
 from transformers import AutoModelForSequenceClassification
 import torch
+from torch.utils.data import DataLoader
 import torchmetrics
 
 from utils.corpus_load import load_data, REGISTERS, CORPUS_FILEPATH
@@ -48,6 +49,7 @@ def main(model_name : str, train_langs : str, eval_lang : str):
     eval_lang_tsv = f"{CORPUS_FILEPATH}/test/{eval_lang}.tsv"
 
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+    torch.cuda.empty_cache()
     try:
         classifier = AutoModelForSequenceClassification.from_pretrained(f"./models/{model_name}-{train_langs}")
     except Exception as e:
@@ -55,13 +57,12 @@ def main(model_name : str, train_langs : str, eval_lang : str):
         sys.exit(1)
     classifier.to(device)
 
-    test_dataloader = load_data(eval_lang_tsv, checkpoint, batch_size=64)
+    test_dataset = load_data(eval_lang_tsv, checkpoint)
+    test_dataloader = DataLoader(test_dataset, batch_size=64)
     metrics = get_metrics(num_labels, device)
     output_filepath = f"output/{model_name}/{train_langs}/eval/"
     
     evaluate(classifier, test_dataloader, device, metrics, output_filepath, eval_lang)
-
-    torch.cuda.empty_cache()
     
 
 if __name__ == "__main__":
