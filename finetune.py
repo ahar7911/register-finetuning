@@ -80,7 +80,6 @@ def main(rank : int,
     num_labels = len(REGISTERS)
     train_lang_tsv = f"/train/{train_langs}.tsv"
 
-    torch.cuda.empty_cache()
     model = AutoModelForSequenceClassification.from_pretrained(checkpoint, num_labels=num_labels)
     model.to(rank)
     model = DDP(model, device_ids=[rank])

@@ -50,7 +50,6 @@ def main(model_name : str, train_langs : str, eval_lang : str) -> None:
     eval_lang_tsv = f"/test/{eval_lang}.tsv"
 
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-    torch.cuda.empty_cache()
     try:
         classifier = AutoModelForSequenceClassification.from_pretrained(f"./models/{model_name}-{train_langs}")
     except Exception as e:
