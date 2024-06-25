@@ -10,9 +10,12 @@ import torchmetrics
 from utils.corpus_load import load_data, REGISTERS, CORPUS_FILEPATH
 from utils.metrics import get_metrics, add_batch, get_metric_summary, reset_metrics, save_cf_matrix
 
-def evaluate(model : transformers.PreTrainedModel, test_dataloader : torch.utils.data.DataLoader, 
-             device : torch.device, metrics : dict[str, torchmetrics.Metric],
-             output_filepath : str, lang : str):
+def evaluate(model : transformers.PreTrainedModel, 
+             test_dataloader : torch.utils.data.DataLoader, 
+             device : torch.device, 
+             metrics : dict[str, torchmetrics.Metric],
+             output_filepath : str, 
+             lang : str):
     model.eval()
     all_labels = []
     all_preds = []
@@ -48,7 +51,7 @@ def main(model_name : str, train_langs : str, eval_lang : str):
     try:
         classifier = AutoModelForSequenceClassification.from_pretrained(f"./models/{model_name}-{train_langs}")
     except Exception as e:
-        print(f"{str(e)}\n Model not found, no saved model has been trained on specified model/language", file=sys.stderr)
+        print(f"{str(e)}\n Model not found, incorrect model name or no saved model has been trained on specified language", file=sys.stderr)
         sys.exit(1)
     classifier.to(device)
 

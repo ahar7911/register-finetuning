@@ -10,9 +10,14 @@ import torchmetrics
 from utils.corpus_load import load_data, REGISTERS, CORPUS_FILEPATH
 from utils.metrics import get_metrics, add_batch, get_metric_summary, reset_metrics
 
-def train(model : transformers.PreTrainedModel, train_dataloader : DataLoader, num_epochs: int, 
-          device : torch.device, optimizer : torch.optim.Optimizer, lr_scheduler : torch.optim.lr_scheduler.LambdaLR, 
-          metrics : dict[str, torchmetrics.Metric], output_file_str : str):
+def train(model : transformers.PreTrainedModel, 
+          train_dataloader : DataLoader, 
+          num_epochs: int, 
+          device : torch.device, 
+          optimizer : torch.optim.Optimizer, 
+          lr_scheduler : torch.optim.lr_scheduler.LambdaLR, 
+          metrics : dict[str, torchmetrics.Metric], 
+          output_file_str : str):
 
     train_summary = {}
     for epoch in range(num_epochs):
