@@ -33,7 +33,8 @@ def train(model : DDP,
           optimizer : torch.optim.Optimizer, 
           lr_scheduler : torch.optim.lr_scheduler.LambdaLR, 
           metrics : dict[str, torchmetrics.Metric], 
-          output_file_str : str
+          output_file_str : str,
+          rank : int
           ) -> None:
 
     train_summary = {}
@@ -42,7 +43,8 @@ def train(model : DDP,
         epoch_str = f"epoch {epoch + 1}"
 
         print(f"{epoch_str} training")
-        for batch in train_dataloader:            
+        for batch in train_dataloader:       
+            batch = {k: v.to(rank) for k, v in batch.items()}     
             outputs = model(**batch)
             preds = torch.argmax(outputs.logits, dim=-1)
             add_batch(metrics, preds, batch["labels"])
@@ -97,7 +99,7 @@ def main(rank : int,
     metrics = get_metrics(num_labels, rank)
     output_filepath = f"output/{model_name}/{train_langs}/train.json"
 
-    train(model, train_dataloader, num_epochs, optimizer, lr_scheduler, metrics, output_filepath)
+    train(model, train_dataloader, num_epochs, optimizer, lr_scheduler, metrics, output_filepath, rank)
     model.module.save_pretrained(f"./models/{model_name}-{train_langs}/", from_pt=True)
 
     destroy_process_group()
