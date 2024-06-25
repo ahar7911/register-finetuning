@@ -113,8 +113,8 @@ if __name__ == "__main__":
                         help="Language(s) to finetune register classification on")
     parser.add_argument("--num_epochs", default=4, type=int,
                         help="Number of epochs to finetune model for (default: 4)")
-    parser.add_argument("--batch_size", default=16, type=int,
-                        help="Size of each training batch (default: 16)")
+    parser.add_argument("--batch_size", default=8, type=int,
+                        help="Size of each training batch (default: 8)")
     args = parser.parse_args()
 
     world_size = torch.cuda.device_count()
