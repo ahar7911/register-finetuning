@@ -13,7 +13,7 @@ from torch.utils.data.distributed import DistributedSampler
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.distributed import init_process_group, destroy_process_group
 
-from utils.corpus_load import load_data, REGISTERS, CORPUS_FILEPATH
+from utils.corpus_load import load_data, REGISTERS
 from utils.metrics import get_metrics, add_batch, get_metric_summary, reset_metrics
 
 def ddp_setup(rank, world_size):
@@ -77,7 +77,7 @@ def main(rank : int,
     checkpoint = model2chckpt[model_name]
 
     num_labels = len(REGISTERS)
-    train_lang_tsv = f"{CORPUS_FILEPATH}/train/{train_langs}.tsv"
+    train_lang_tsv = f"/train/{train_langs}.tsv"
 
     device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
     torch.cuda.empty_cache()

@@ -8,7 +8,7 @@ import torch
 from torch.utils.data import DataLoader
 import torchmetrics
 
-from utils.corpus_load import load_data, REGISTERS, CORPUS_FILEPATH
+from utils.corpus_load import load_data, REGISTERS
 from utils.metrics import get_metrics, add_batch, get_metric_summary, reset_metrics, save_cf_matrix
 
 def evaluate(model : transformers.PreTrainedModel, 
@@ -47,7 +47,7 @@ def main(model_name : str, train_langs : str, eval_lang : str) -> None:
     checkpoint = model2chckpt[model_name]
 
     num_labels = len(REGISTERS)
-    eval_lang_tsv = f"{CORPUS_FILEPATH}/test/{eval_lang}.tsv"
+    eval_lang_tsv = f"/test/{eval_lang}.tsv"
 
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     torch.cuda.empty_cache()

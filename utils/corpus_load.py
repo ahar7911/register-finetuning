@@ -25,7 +25,7 @@ class RegisterDataset(Dataset):
 
 def load_data(filepath : str, model_checkpoint : str) -> Dataset:
     try:
-        dataset = pd.read_csv(filepath, sep='\t')
+        dataset = pd.read_csv(CORPUS_FILEPATH + filepath, sep='\t')
     except FileNotFoundError as e:
         print(f"{str(e)}\n Corpus file not found, incorrect language specification", file=sys.stderr)
         sys.exit(1)
