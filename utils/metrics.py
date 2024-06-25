@@ -1,6 +1,14 @@
+import numpy as np
+import pandas as pd
+import seaborn as sn
+import matplotlib.pyplot as plt
+
 import torch
 import torchmetrics
 from torchmetrics.classification import MulticlassAccuracy, MulticlassPrecision, MulticlassRecall, MulticlassF1Score
+from sklearn.metrics import confusion_matrix
+
+from corpus_load import REGISTERS
 
 def get_metrics(num_classes : int, device : torch.device) -> dict[str, torchmetrics.Metric]:
     metrics = {'accuracy': MulticlassAccuracy(num_classes=num_classes),
@@ -26,3 +34,12 @@ def get_metric_summary(metrics : dict[str, torchmetrics.Metric]) -> dict[str, fl
 def reset_metrics(metrics : dict[str, torchmetrics.Metric]):
     for metric in metrics.values():
         metric.reset()
+
+def save_cf_matrix(preds : torch.Tensor, labels : torch.Tensor, output_filepath : str):
+    # modified from https://christianbernecker.medium.com/how-to-create-a-confusion-matrix-in-pytorch-38d06a7f04b7
+    cf_matrix = confusion_matrix(labels, preds, labels=range(len(REGISTERS)))
+    cf_matrix = np.divide(cf_matrix, np.sum(cf_matrix, axis=1)[:, None], where=cf_matrix!=0)
+    df_cm = pd.DataFrame(cf_matrix, index=REGISTERS, columns=REGISTERS)
+    plt.figure(figsize = (12,7))
+    sn.heatmap(df_cm, annot=True)
+    plt.savefig(output_filepath)

@@ -1,19 +1,14 @@
 from argparse import ArgumentParser
 import sys
 import json
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
 
 import transformers
 from transformers import AutoModelForSequenceClassification
 import torch
 import torchmetrics
-from sklearn.metrics import confusion_matrix
-import seaborn as sn
 
 from utils.corpus_load import load_data, REGISTERS, CORPUS_FILEPATH
-from utils.metrics import get_metrics, add_batch, get_metric_summary, reset_metrics
+from utils.metrics import get_metrics, add_batch, get_metric_summary, reset_metrics, save_cf_matrix
 
 def evaluate(model : transformers.PreTrainedModel, test_dataloader : torch.utils.data.DataLoader, 
              device : torch.device, metrics : dict[str, torchmetrics.Metric],
@@ -39,13 +34,7 @@ def evaluate(model : transformers.PreTrainedModel, test_dataloader : torch.utils
         json.dump(metric_summary, file, indent=4)
     reset_metrics(metrics)
 
-    # modified from https://christianbernecker.medium.com/how-to-create-a-confusion-matrix-in-pytorch-38d06a7f04b7
-    cf_matrix = confusion_matrix(torch.cat(all_labels), torch.cat(all_preds), labels=range(len(REGISTERS)))
-    cf_matrix = np.divide(cf_matrix, np.sum(cf_matrix, axis=1)[:, None], where=cf_matrix!=0)
-    df_cm = pd.DataFrame(cf_matrix, index=REGISTERS, columns=REGISTERS)
-    plt.figure(figsize = (12,7))
-    sn.heatmap(df_cm, annot=True)
-    plt.savefig(output_filepath + f"{lang}.png")
+    save_cf_matrix(torch.cat(all_preds), torch.cat(all_labels), output_filepath + f"{lang}.png")
 
 def main(model_name : str, train_langs : str, eval_lang : str):
     with open("utils/model2chckpt.json") as file:
