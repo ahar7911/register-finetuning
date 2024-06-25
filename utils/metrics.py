@@ -18,7 +18,6 @@ def get_metrics(num_classes : int, device : torch.device) -> dict[str, torchmetr
     
     for metric in metrics.values():
         metric.to(device)
-
     return metrics
 
 def add_batch(metrics : dict[str, torchmetrics.Metric], 
@@ -38,11 +37,15 @@ def reset_metrics(metrics : dict[str, torchmetrics.Metric]) -> None:
     for metric in metrics.values():
         metric.reset()
 
-def save_cf_matrix(preds : torch.Tensor, labels : torch.Tensor, output_filepath : str) -> None:
-    # modified from https://christianbernecker.medium.com/how-to-create-a-confusion-matrix-in-pytorch-38d06a7f04b7
+# modified from https://christianbernecker.medium.com/how-to-create-a-confusion-matrix-in-pytorch-38d06a7f04b7
+def save_cf_matrix(preds : torch.Tensor, 
+                   labels : torch.Tensor, 
+                   output_filepath : str
+                   ) -> None:
     cf_matrix = confusion_matrix(labels, preds, labels=range(len(REGISTERS)))
     cf_matrix = np.divide(cf_matrix, np.sum(cf_matrix, axis=1)[:, None], where=cf_matrix!=0)
     df_cm = pd.DataFrame(cf_matrix, index=REGISTERS, columns=REGISTERS)
+
     plt.figure(figsize = (12,7))
     sn.heatmap(df_cm, annot=True)
     plt.savefig(output_filepath)
