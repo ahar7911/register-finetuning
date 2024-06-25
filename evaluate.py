@@ -16,7 +16,8 @@ def evaluate(model : transformers.PreTrainedModel,
              device : torch.device, 
              metrics : dict[str, torchmetrics.Metric],
              output_filepath : str, 
-             lang : str):
+             lang : str
+             ) -> None:
     model.eval()
     all_labels = []
     all_preds = []
@@ -40,7 +41,7 @@ def evaluate(model : transformers.PreTrainedModel,
 
     save_cf_matrix(torch.cat(all_preds), torch.cat(all_labels), output_filepath + f"{lang}.png")
 
-def main(model_name : str, train_langs : str, eval_lang : str):
+def main(model_name : str, train_langs : str, eval_lang : str) -> None:
     with open("utils/model2chckpt.json") as file:
         model2chckpt = json.load(file)
     checkpoint = model2chckpt[model_name]
