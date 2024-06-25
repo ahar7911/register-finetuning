@@ -10,14 +10,14 @@ from sklearn.metrics import confusion_matrix
 
 from utils.corpus_load import REGISTERS
 
-def get_metrics(num_classes : int) -> dict[str, torchmetrics.Metric]:
+def get_metrics(num_classes : int, device : torch.device) -> dict[str, torchmetrics.Metric]:
     metrics = {'accuracy': MulticlassAccuracy(num_classes=num_classes),
                'precision': MulticlassPrecision(num_classes=num_classes),
                'recall': MulticlassRecall(num_classes=num_classes),
                'f1': MulticlassF1Score(num_classes=num_classes)}
     
-    # for metric in metrics.values():
-    #     metric.to(device)
+    for metric in metrics.values():
+        metric.to(device)
     return metrics
 
 def add_batch(metrics : dict[str, torchmetrics.Metric], 
