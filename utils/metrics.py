@@ -8,7 +8,7 @@ import torchmetrics
 from torchmetrics.classification import MulticlassAccuracy, MulticlassPrecision, MulticlassRecall, MulticlassF1Score
 from sklearn.metrics import confusion_matrix
 
-from corpus_load import REGISTERS
+from utils.corpus_load import REGISTERS
 
 def get_metrics(num_classes : int, device : torch.device) -> dict[str, torchmetrics.Metric]:
     metrics = {'accuracy': MulticlassAccuracy(num_classes=num_classes),
