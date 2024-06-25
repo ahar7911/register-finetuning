@@ -1,5 +1,6 @@
 from argparse import ArgumentParser
 import json
+import os
 
 import torch
 from torch.utils.data import DataLoader
@@ -7,17 +8,34 @@ import transformers
 from transformers import AutoModelForSequenceClassification, get_scheduler
 import torchmetrics
 
+import torch.multiprocessing as mp
+from torch.utils.data.distributed import DistributedSampler
+from torch.nn.parallel import DistributedDataParallel as DDP
+from torch.distributed import init_process_group, destroy_process_group
+
 from utils.corpus_load import load_data, REGISTERS, CORPUS_FILEPATH
 from utils.metrics import get_metrics, add_batch, get_metric_summary, reset_metrics
 
-def train(model : transformers.PreTrainedModel, 
+def ddp_setup(rank, world_size):
+    """
+    Args:
+        rank: Unique identifier of each process
+        world_size: Total number of processes
+    """
+    os.environ["MASTER_ADDR"] = "localhost"
+    os.environ["MASTER_PORT"] = "12355"
+    init_process_group(backend="nccl", rank=rank, world_size=world_size)
+    torch.cuda.set_device(rank)
+
+def train(model : DDP, 
           train_dataloader : DataLoader, 
           num_epochs: int, 
           device : torch.device, 
           optimizer : torch.optim.Optimizer, 
           lr_scheduler : torch.optim.lr_scheduler.LambdaLR, 
           metrics : dict[str, torchmetrics.Metric], 
-          output_file_str : str):
+          output_file_str : str
+          ) -> None:
 
     train_summary = {}
     for epoch in range(num_epochs):
@@ -25,9 +43,7 @@ def train(model : transformers.PreTrainedModel,
         epoch_str = f"epoch {epoch + 1}"
 
         print(f"{epoch_str} training")
-        for batch in train_dataloader:
-            batch = {k: v.to(device) for k, v in batch.items()}
-            
+        for batch in train_dataloader:            
             outputs = model(**batch)
             preds = torch.argmax(outputs.logits, dim=-1)
             add_batch(metrics, preds, batch["labels"])
@@ -47,7 +63,15 @@ def train(model : transformers.PreTrainedModel,
         json.dump(train_summary, file, indent=4)
 
 
-def main(model_name : str, train_langs : str, num_epochs : int):
+def main(rank : int, 
+         world_size: int, 
+         model_name : str, 
+         train_langs : str, 
+         num_epochs : int,
+         batch_size : int,
+         ) -> None:
+    ddp_setup(rank, world_size)
+
     with open("utils/model2chckpt.json") as file:
         model2chckpt = json.load(file)
     checkpoint = model2chckpt[model_name]
@@ -55,12 +79,16 @@ def main(model_name : str, train_langs : str, num_epochs : int):
     num_labels = len(REGISTERS)
     train_lang_tsv = f"{CORPUS_FILEPATH}/train/{train_langs}.tsv"
 
-    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-    classifier = AutoModelForSequenceClassification.from_pretrained(checkpoint, num_labels=num_labels)
-    classifier.to(device)
+    device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
+    torch.cuda.empty_cache()
+    model = AutoModelForSequenceClassification.from_pretrained(checkpoint, num_labels=num_labels)
+    model = DDP(model, device_ids=[rank])
 
-    train_dataloader = load_data(train_lang_tsv, checkpoint, is_train=True, batch_size=16)
-    optimizer = torch.optim.AdamW(classifier.parameters(), lr=5e-5)
+    train_dataset = load_data(train_lang_tsv, checkpoint)
+    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, 
+                                                 pin_memory=True, 
+                                                 sampler=DistributedSampler(train_dataset))
+    optimizer = torch.optim.AdamW(model.parameters(), lr=5e-5)
     lr_scheduler = get_scheduler(
         "linear",
         optimizer=optimizer,
@@ -70,10 +98,10 @@ def main(model_name : str, train_langs : str, num_epochs : int):
     metrics = get_metrics(num_labels, device)
     output_filepath = f"output/{model_name}/{train_langs}/train.json"
 
-    train(classifier, train_dataloader, num_epochs, device, optimizer, lr_scheduler, metrics, output_filepath)
-    classifier.save_pretrained(f"./models/{model_name}-{train_langs}/", from_pt=True)
+    train(model, train_dataloader, num_epochs, device, optimizer, lr_scheduler, metrics, output_filepath)
+    model.module.save_pretrained(f"./models/{model_name}-{train_langs}/", from_pt=True)
 
-    torch.cuda.empty_cache()
+    destroy_process_group()
 
 
 if __name__ == "__main__":
@@ -83,11 +111,12 @@ if __name__ == "__main__":
                         help="LLM to finetune")
     parser.add_argument("--train_langs", required=True,
                         help="Language(s) to finetune register classification on")
-    parser.add_argument("--num_epochs", default=4,
-                        help="Number of epochs to finetune model for.")
+    parser.add_argument("--num_epochs", default=4, type=int,
+                        help="Number of epochs to finetune model for (default: 4)")
+    parser.add_argument("--batch_size", default=16, type=int,
+                        help="Size of each training batch (default: 16)")
     args = parser.parse_args()
 
-    if args.num_epochs is not None:
-        main(args.model, args.train_langs, args.num_epochs)
-    else:
-        main(args.model, args.train_langs)
+    world_size = torch.cuda.device_count()
+    print(f"World size: {world_size}")
+    mp.spawn(main, args=(world_size, args.model, args.train_langs, args.num_epochs), nprocs=world_size)
