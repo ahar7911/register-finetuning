@@ -5,8 +5,8 @@
 #SBATCH -N 1
 #SBATCH --exclusive
 #SBATCH --time 00:59:00
-#SBATCH --error=output/err_eval.txt
-#SBATCH --output=output/out_eval.txt
+#SBATCH --error=output/eval_err.txt
+#SBATCH --output=output/eval_out.txt
 
 module load python/python-3.11.3
 source /home2020/home/lilpa/harbison/experiences/env/bin/activate
