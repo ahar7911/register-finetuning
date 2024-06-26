@@ -1,7 +1,6 @@
 from argparse import ArgumentParser
 import sys
 import time
-import logging
 import json
 
 import transformers
@@ -36,7 +35,7 @@ def evaluate(model : transformers.PreTrainedModel,
 
         all_labels.append(batch["labels"].cpu())
         all_preds.append(preds.cpu())
-    logging.info(f"end evaluation | total time: {time.time() - eval_start_time}")
+    print(f"end evaluation | total time: {time.time() - eval_start_time}")
     
     metric_summary = get_metric_summary(metrics)
     with open(output_filepath + f"{lang}.json", "w") as file:
@@ -45,7 +44,7 @@ def evaluate(model : transformers.PreTrainedModel,
 
     save_cf_matrix(torch.cat(all_preds), torch.cat(all_labels), output_filepath + f"{lang}.png")
 
-    logging.info("metrics and cf matrix saved")
+    print("metrics and cf matrix saved")
 
 def main(model_name : str, train_langs : str, eval_lang : str) -> None:
     with open("utils/model2chckpt.json") as file:
