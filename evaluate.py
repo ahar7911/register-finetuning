@@ -16,16 +16,16 @@ def evaluate(model : transformers.PreTrainedModel,
              test_dataloader : torch.utils.data.DataLoader, 
              device : torch.device, 
              metrics : dict[str, torchmetrics.Metric],
-             output_filepath : str, 
-             lang : str
+             output_filepath : str
              ) -> None:
-    model.eval()
     all_labels = []
     all_preds = []
-
+    
+    model.eval()
     eval_start_time = time.time()
     for batch in test_dataloader:
         batch = {k: v.to(device) for k, v in batch.items()}
+
         with torch.no_grad():
             outputs = model(**batch)
         
@@ -40,35 +40,37 @@ def evaluate(model : transformers.PreTrainedModel,
     print(f"end evaluation | total time: {int(total_time // 60)}m{total_time % 60:.2f}s")
     
     metric_summary = get_metric_summary(metrics)
-    with open(output_filepath + f"{lang}.json", "w") as file:
+    with open(output_filepath + ".json", "w") as file:
         json.dump(metric_summary, file, indent=4)
     reset_metrics(metrics)
 
-    save_cf_matrix(torch.cat(all_preds), torch.cat(all_labels), output_filepath + f"{lang}.png")
+    save_cf_matrix(torch.cat(all_preds), torch.cat(all_labels), output_filepath + ".png")
 
     print("metrics and cf matrix saved")
+
 
 def main(model_name : str, train_langs : str, eval_lang : str) -> None:
     with open("utils/model2chckpt.json") as file:
         model2chckpt = json.load(file)
+    
     checkpoint = model2chckpt[model_name]
-
     num_labels = len(REGISTERS)
-    eval_lang_tsv = f"/test/{eval_lang}.tsv"
 
-    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     try:
         classifier = AutoModelForSequenceClassification.from_pretrained(f"./models/{model_name}-{train_langs}")
     except Exception as e:
         raise RuntimeError(f"Model not found, incorrect model name {model_name} or no saved model has been trained on specified language(s) {train_langs}") from e
     classifier.to(device)
 
+    eval_lang_tsv = f"/test/{eval_lang}.tsv"
     test_dataset = load_data(eval_lang_tsv, checkpoint)
     test_dataloader = DataLoader(test_dataset, batch_size=64)
+
     metrics = get_metrics(num_labels, device)
-    output_filepath = f"output/{model_name}/{train_langs}/eval/"
+    output_filepath = f"output/{model_name}/{train_langs}/eval/{eval_lang}"
     
-    evaluate(classifier, test_dataloader, device, metrics, output_filepath, eval_lang)
+    evaluate(classifier, test_dataloader, device, metrics, output_filepath)
     
 
 if __name__ == "__main__":

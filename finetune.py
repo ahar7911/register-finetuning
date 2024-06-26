@@ -28,6 +28,7 @@ def ddp_setup(rank, world_size):
     torch.cuda.set_device(rank)
     init_process_group(backend="nccl", rank=rank, world_size=world_size)
 
+
 def train(model : DDP, 
           train_dataloader : DataLoader, 
           rank : int,
@@ -86,19 +87,20 @@ def main(rank : int,
 
     with open("utils/model2chckpt.json") as file:
         model2chckpt = json.load(file)
-    checkpoint = model2chckpt[model_name]
 
+    checkpoint = model2chckpt[model_name]
     num_labels = len(REGISTERS)
-    train_lang_tsv = f"/train/{train_langs}.tsv"
 
     model = AutoModelForSequenceClassification.from_pretrained(checkpoint, num_labels=num_labels)
     model.to(rank)
     model = DDP(model, device_ids=[rank])
 
+    train_lang_tsv = f"/train/{train_langs}.tsv"
     train_dataset = load_data(train_lang_tsv, checkpoint)
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, 
                                                  pin_memory=True, 
                                                  sampler=DistributedSampler(train_dataset))
+    
     optimizer = torch.optim.AdamW(model.parameters(), lr=5e-5)
     lr_scheduler = get_scheduler(
         "linear",
@@ -123,9 +125,9 @@ if __name__ == "__main__":
     parser.add_argument("--train_langs", required=True,
                         help="Language(s) to finetune register classification on")
     parser.add_argument("--num_epochs", default=5, type=int,
-                        help="Number of epochs to finetune model for (default: 4)")
+                        help="Number of epochs to finetune model for (default: 5)")
     parser.add_argument("--batch_size", default=16, type=int,
-                        help="Size of each training batch (default: 8)")
+                        help="Size of each training batch (default: 16)")
     args = parser.parse_args()
 
     world_size = torch.cuda.device_count()
