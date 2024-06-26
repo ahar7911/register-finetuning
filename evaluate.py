@@ -35,9 +35,9 @@ def evaluate(model : transformers.PreTrainedModel,
 
         all_labels.append(batch["labels"].cpu())
         all_preds.append(preds.cpu())
-        
+
     total_time = time.time() - eval_start_time
-    print(f"end evaluation | total time: {total_time // 60}m{total_time % 60}s")
+    print(f"end evaluation | total time: {int(total_time // 60)}m{total_time % 60}s")
     
     metric_summary = get_metric_summary(metrics)
     with open(output_filepath + f"{lang}.json", "w") as file:
