@@ -62,11 +62,14 @@ def train(model : DDP,
             optimizer.zero_grad()
         
         epoch_str = f"epoch {epoch + 1}"
-        print(f"gpu{rank}: {epoch_str} | loss: {loss} | time: {time.time() - epoch_start_time}")
+        epoch_time = time.time() - epoch_start_time
+        print(f"gpu{rank}: {epoch_str} | loss: {loss} | time: {epoch_time // 60}m{epoch_time % 60}s")
 
         train_summary[epoch_str] = get_metric_summary(metrics)
         reset_metrics(metrics)
-    print(f"gpu{rank}: end training | total time: {time.time() - train_start_time}")
+
+    total_time = time.time() - train_start_time
+    print(f"gpu{rank}: end training | total time: {total_time // 60}m{total_time % 60}s")
     
     with open(output_file_str, "w") as file:
         json.dump(train_summary, file, indent=4)
