@@ -111,6 +111,8 @@ def main(rank : int,
 
     train(model, train_dataloader, rank, num_epochs, optimizer, lr_scheduler, metrics, output_filepath)
     model.module.save_pretrained(f"./models/{model_name}-{train_langs}/", from_pt=True)
+    print(mp.current_process().name)
+    del model
 
     destroy_process_group()
 
