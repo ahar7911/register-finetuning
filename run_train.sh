@@ -5,6 +5,10 @@
 #SBATCH --gres=gpu:2
 #SBATCH --exclusive
 #SBATCH --time 00:59:00
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-user=harbison@unistra.fr
+
+set -e # if python script fails, bash script fails
 
 module load python/python-3.11.3
 source /home2020/home/lilpa/harbison/experiences/env/bin/activate
