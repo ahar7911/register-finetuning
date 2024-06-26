@@ -1,6 +1,8 @@
 from argparse import ArgumentParser
-import json
 import os
+import time
+import logging
+import json
 
 import torch
 from torch.utils.data import DataLoader
@@ -29,22 +31,25 @@ def ddp_setup(rank, world_size):
 
 def train(model : DDP, 
           train_dataloader : DataLoader, 
+          rank : int,
           num_epochs: int,
           optimizer : torch.optim.Optimizer, 
           lr_scheduler : torch.optim.lr_scheduler.LambdaLR, 
           metrics : dict[str, torchmetrics.Metric], 
-          output_file_str : str,
-          rank : int
+          output_file_str : str
           ) -> None:
 
     train_summary = {}
+    train_start_time = time.time()
+    logging.info("start training")
+
     for epoch in range(num_epochs):
         model.train()
-        epoch_str = f"epoch {epoch + 1}"
+        epoch_start_time = time.time()
 
-        print(f"{epoch_str} training")
         for batch in train_dataloader:       
-            batch = {k: v.to(rank) for k, v in batch.items()}     
+            batch = {k: v.to(rank) for k, v in batch.items()}
+
             outputs = model(**batch)
             preds = torch.argmax(outputs.logits, dim=-1)
             add_batch(metrics, preds, batch["labels"])
@@ -56,9 +61,13 @@ def train(model : DDP,
             lr_scheduler.step()
 
             optimizer.zero_grad()
+        
+        epoch_str = f"epoch {epoch + 1}"
+        logging.info(f"{epoch_str} | loss : {loss} | time: {time.time() - epoch_start_time}")
 
         train_summary[epoch_str] = get_metric_summary(metrics)
         reset_metrics(metrics)
+    logging.info(f"end training | total time: {time.time() - train_start_time}")
     
     with open(output_file_str, "w") as file:
         json.dump(train_summary, file, indent=4)
@@ -98,7 +107,7 @@ def main(rank : int,
     metrics = get_metrics(num_labels, rank)
     output_filepath = f"output/{model_name}/{train_langs}/train.json"
 
-    train(model, train_dataloader, num_epochs, optimizer, lr_scheduler, metrics, output_filepath, rank)
+    train(model, train_dataloader, rank, num_epochs, optimizer, lr_scheduler, metrics, output_filepath)
     model.module.save_pretrained(f"./models/{model_name}-{train_langs}/", from_pt=True)
 
     destroy_process_group()
@@ -118,7 +127,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     world_size = torch.cuda.device_count()
-    for i in range(torch.cuda.device_count()):
-        print(torch.cuda.get_device_properties(i).name)
-    print(f"World size: {world_size}")
+    logging.info(f"world size (# of gpus): {world_size}")
+
     mp.spawn(main, args=(world_size, args.model, args.train_langs, args.num_epochs, args.batch_size), nprocs=world_size)

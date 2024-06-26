@@ -1,5 +1,7 @@
 from argparse import ArgumentParser
 import sys
+import time
+import logging
 import json
 
 import transformers
@@ -22,6 +24,7 @@ def evaluate(model : transformers.PreTrainedModel,
     all_labels = []
     all_preds = []
 
+    eval_start_time = time.time()
     for batch in test_dataloader:
         batch = {k: v.to(device) for k, v in batch.items()}
         with torch.no_grad():
@@ -33,6 +36,7 @@ def evaluate(model : transformers.PreTrainedModel,
 
         all_labels.append(batch["labels"].cpu())
         all_preds.append(preds.cpu())
+    logging.info(f"end evaluation | total time: {time.time() - eval_start_time}")
     
     metric_summary = get_metric_summary(metrics)
     with open(output_filepath + f"{lang}.json", "w") as file:
@@ -40,6 +44,8 @@ def evaluate(model : transformers.PreTrainedModel,
     reset_metrics(metrics)
 
     save_cf_matrix(torch.cat(all_preds), torch.cat(all_labels), output_filepath + f"{lang}.png")
+
+    logging.info("metrics and cf matrix saved")
 
 def main(model_name : str, train_langs : str, eval_lang : str) -> None:
     with open("utils/model2chckpt.json") as file:
@@ -53,8 +59,7 @@ def main(model_name : str, train_langs : str, eval_lang : str) -> None:
     try:
         classifier = AutoModelForSequenceClassification.from_pretrained(f"./models/{model_name}-{train_langs}")
     except Exception as e:
-        print(f"{str(e)}\n Model not found, incorrect model name or no saved model has been trained on specified language", file=sys.stderr)
-        sys.exit(1)
+        raise RuntimeError(f"Model not found, incorrect model name {model_name} or no saved model has been trained on specified language(s) {train_langs}") from e
     classifier.to(device)
 
     test_dataset = load_data(eval_lang_tsv, checkpoint)
@@ -71,7 +76,7 @@ if __name__ == "__main__":
     parser.add_argument("--model", choices=["mbert", "xlm-r", "glot500"], required=True,
                         help="Name of model to evaluate")
     parser.add_argument("--train_langs", required=True, 
-                        help="Language(s) model was fine-tuned on; untrained model used if not specified")
+                        help="Language(s) model was fine-tuned on")
     parser.add_argument("--eval_lang", required=True,
                         help="Language to evaluate fine-tuned model on")
     args = parser.parse_args()
