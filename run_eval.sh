@@ -19,6 +19,7 @@ for model in "${models[@]}"; do
     for train_lang in "${train_langs[@]}"; do
         echo "evaluating $model trained on $train_lang"
         for eval_lang in "${eval_langs[@]}"; do
+            echo
             echo "evaluating on $eval_lang"
             mkdir -p "output/$model/$train_lang/eval"
             srun python evaluate.py --model $model --train_langs $train_lang --eval_lang $eval_lang

@@ -17,6 +17,7 @@ langs=("en")
 
 for model in "${models[@]}"; do
     for lang in "${langs[@]}"; do
+        echo
         echo "finetuning $model on $lang"
         mkdir -p "output/$model/$lang"
         srun python finetune.py --model $model --train_langs $lang

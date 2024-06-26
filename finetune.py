@@ -1,7 +1,6 @@
 from argparse import ArgumentParser
 import os
 import time
-import logging
 import json
 
 import torch
@@ -41,7 +40,7 @@ def train(model : DDP,
 
     train_summary = {}
     train_start_time = time.time()
-    logging.info("start training")
+    print("start training")
 
     for epoch in range(num_epochs):
         model.train()
@@ -63,11 +62,11 @@ def train(model : DDP,
             optimizer.zero_grad()
         
         epoch_str = f"epoch {epoch + 1}"
-        logging.info(f"{epoch_str} | loss : {loss} | time: {time.time() - epoch_start_time}")
+        print(f"{epoch_str} | loss : {loss} | time: {time.time() - epoch_start_time}")
 
         train_summary[epoch_str] = get_metric_summary(metrics)
         reset_metrics(metrics)
-    logging.info(f"end training | total time: {time.time() - train_start_time}")
+    print(f"end training | total time: {time.time() - train_start_time}")
     
     with open(output_file_str, "w") as file:
         json.dump(train_summary, file, indent=4)
@@ -127,6 +126,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     world_size = torch.cuda.device_count()
-    logging.info(f"world size (# of gpus): {world_size}")
+    print(f"world size (# of gpus): {world_size}")
 
     mp.spawn(main, args=(world_size, args.model, args.train_langs, args.num_epochs, args.batch_size), nprocs=world_size)
