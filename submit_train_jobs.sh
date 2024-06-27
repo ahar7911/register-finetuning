@@ -1,6 +1,6 @@
 #! /bin/bash
 
-models=("mbert" "xlm-r" "glot500")
+models=("glot500")
 langs=("en" "fi" "fr" "sv" "id" "tr")
 
 for model in "${models[@]}"; do
