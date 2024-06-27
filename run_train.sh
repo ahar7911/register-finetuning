@@ -15,8 +15,9 @@ source /home2020/home/lilpa/harbison/experiences/env/bin/activate
 
 model=$1
 lang=$2
+[ "$model" == "glot500" ] && batch_size=8 || batch_size=16
 
 echo
 echo "finetuning $model on $lang"
-srun python finetune.py --model $model --train_langs $lang
+srun python finetune.py --model $model --train_langs $lang --batch_size $batch_size
 echo "finetuning $model on $lang complete"
