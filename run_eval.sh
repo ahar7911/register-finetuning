@@ -17,6 +17,7 @@ eval_langs=("en" "fi" "fr" "sv" "id" "tr")
 
 for model in "${models[@]}"; do
     for train_lang in "${train_langs[@]}"; do
+        echo
         echo "evaluating $model trained on $train_lang"
         for eval_lang in "${eval_langs[@]}"; do
             echo
