@@ -1,5 +1,4 @@
 from argparse import ArgumentParser
-import sys
 import time
 import json
 
