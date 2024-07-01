@@ -11,12 +11,9 @@
 module load python/python-3.11.3
 source /home2020/home/lilpa/harbison/experiences/env/bin/activate
 
-# models=("mbert" "xlm-r" "glot500")
-# train_langs=("en" "fi" "fr" "sv" "id" "tr")
-# eval_langs=("en" "fi" "fr" "sv" "id" "tr")
-models=("mbert")
-train_langs=("en")
-eval_langs=("id")
+models=("mbert" "xlm-r" "glot500")
+train_langs=("en" "fi" "fr" "sv" "id" "tr")
+eval_langs=("en" "fi" "fr" "sv" "id" "tr")
 
 for model in "${models[@]}"; do
     for train_lang in "${train_langs[@]}"; do
