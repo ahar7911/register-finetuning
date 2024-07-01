@@ -5,16 +5,17 @@ import matplotlib.pyplot as plt
 
 import torch
 import torchmetrics
-from torchmetrics.classification import MulticlassAccuracy, MulticlassPrecision, MulticlassRecall, MulticlassF1Score
+from torchmetrics.classification import MulticlassF1Score#, MulticlassAccuracy, MulticlassPrecision, MulticlassRecall
 from sklearn.metrics import confusion_matrix
 
 from utils.corpus_load import REGISTERS
 
 def get_metrics(num_classes : int, device : torch.device) -> dict[str, torchmetrics.Metric]:
-    metrics = {'accuracy': MulticlassAccuracy(num_classes=num_classes),
-               'precision': MulticlassPrecision(num_classes=num_classes),
-               'recall': MulticlassRecall(num_classes=num_classes),
-               'f1': MulticlassF1Score(num_classes=num_classes)}
+    metrics = {#"accuracy": MulticlassAccuracy(num_classes=num_classes),
+               #"precision": MulticlassPrecision(num_classes=num_classes),
+               #"recall": MulticlassRecall(num_classes=num_classes),
+               "micro_f1": MulticlassF1Score(num_classes=num_classes, average="micro"),
+               "macro_f1": MulticlassF1Score(num_classes=num_classes, average="macro")}
     
     for metric in metrics.values():
         metric.to(device)
@@ -48,4 +49,4 @@ def save_cf_matrix(preds : torch.Tensor,
 
     plt.figure(figsize = (12,7))
     sn.heatmap(df_cm, annot=True)
-    plt.savefig(output_filepath)
+    plt.savefig(output_filepath, bbox_inches="tight")
