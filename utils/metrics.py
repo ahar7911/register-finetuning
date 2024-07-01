@@ -22,7 +22,6 @@ class Metrics:
     
         for metric in self.metrics.values():
             metric.to(device)
-        return self.metrics
 
     def add_batch(self, batch_predictions : torch.Tensor, batch_labels : torch.Tensor) -> None:
         for metric in self.metrics.values():
