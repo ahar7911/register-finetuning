@@ -109,7 +109,7 @@ def main(rank : int,
         num_training_steps=len(train_dataloader) * num_epochs
     )
     metrics = get_metrics(num_labels, rank)
-    output_filepath = f"output/{model_name}/{train_langs}/train.json"
+    output_filepath = f"output/{model_name}-{train_langs}/train.json"
 
     train(model, train_dataloader, rank, num_epochs, optimizer, lr_scheduler, metrics, output_filepath)
     model.module.save_pretrained(f"./models/{model_name}-{train_langs}/", from_pt=True)

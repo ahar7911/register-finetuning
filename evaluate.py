@@ -16,7 +16,8 @@ def evaluate(model : transformers.PreTrainedModel,
              test_dataloader : torch.utils.data.DataLoader, 
              device : torch.device, 
              metrics : dict[str, torchmetrics.Metric],
-             output_filepath : str
+             output_filepath : str,
+             eval_lang : str
              ) -> None:
     all_labels = []
     all_preds = []
@@ -40,11 +41,14 @@ def evaluate(model : transformers.PreTrainedModel,
     print(f"end evaluation | total time: {int(total_time // 60)}m{total_time % 60:.2f}s")
     
     metric_summary = get_metric_summary(metrics)
-    with open(output_filepath + ".json", "w") as file:
-        json.dump(metric_summary, file, indent=4)
+    with open(output_filepath + "eval.json", "a+") as file:
+        evals = json.load(file)
+        evals[eval_lang] = metric_summary
+        file.seek(0) # reset read/write pointer to overwrite
+        json.dump(evals, file, indent=4)
     reset_metrics(metrics)
 
-    save_cf_matrix(torch.cat(all_preds), torch.cat(all_labels), output_filepath + ".png")
+    save_cf_matrix(torch.cat(all_preds), torch.cat(all_labels), output_filepath + f"cfm/{eval_lang}.png")
 
     print("metrics and cf matrix saved")
 
@@ -68,9 +72,9 @@ def main(model_name : str, train_langs : str, eval_lang : str) -> None:
     test_dataloader = DataLoader(test_dataset, batch_size=64)
 
     metrics = get_metrics(num_labels, device)
-    output_filepath = f"output/{model_name}/{train_langs}/eval/{eval_lang}"
+    output_filepath = f"output/{model_name}-{train_langs}/"
     
-    evaluate(classifier, test_dataloader, device, metrics, output_filepath)
+    evaluate(classifier, test_dataloader, device, metrics, output_filepath, eval_lang)
     
 
 if __name__ == "__main__":
