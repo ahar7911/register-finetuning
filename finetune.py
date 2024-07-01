@@ -5,9 +5,7 @@ import json
 
 import torch
 from torch.utils.data import DataLoader
-import transformers
 from transformers import AutoModelForSequenceClassification, get_scheduler
-import torchmetrics
 
 import torch.multiprocessing as mp
 from torch.utils.data.distributed import DistributedSampler
@@ -15,7 +13,7 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.distributed import init_process_group, destroy_process_group
 
 from utils.corpus_load import load_data, REGISTERS
-from utils.metrics import get_metrics, add_batch, get_metric_summary, reset_metrics
+from utils.metrics import Metrics
 
 def ddp_setup(rank, world_size):
     """
@@ -35,11 +33,10 @@ def train(model : DDP,
           num_epochs: int,
           optimizer : torch.optim.Optimizer, 
           lr_scheduler : torch.optim.lr_scheduler.LambdaLR, 
-          metrics : dict[str, torchmetrics.Metric], 
-          output_file_str : str
+          metrics : Metrics, 
+          output_filepath : str
           ) -> None:
 
-    train_summary = {}
     train_start_time = time.time()
     print(f"gpu{rank}: start training")
 
@@ -52,7 +49,7 @@ def train(model : DDP,
 
             outputs = model(**batch)
             preds = torch.argmax(outputs.logits, dim=-1)
-            add_batch(metrics, preds, batch["labels"])
+            metrics.add_batch(preds, batch["labels"])
 
             loss = outputs.loss
             loss.backward()
@@ -66,14 +63,11 @@ def train(model : DDP,
         epoch_time = time.time() - epoch_start_time
         print(f"gpu{rank}: {epoch_str} | loss: {loss} | time: {int(epoch_time // 60)}m{epoch_time % 60:.2f}s")
 
-        train_summary[epoch_str] = get_metric_summary(metrics)
-        reset_metrics(metrics)
+        metrics.write_summary(output_filepath, epoch_str)
+        metrics.reset()
 
     total_time = time.time() - train_start_time
     print(f"gpu{rank}: end training | total time: {int(total_time // 60)}m{total_time % 60:.2f}s")
-    
-    with open(output_file_str, "w") as file:
-        json.dump(train_summary, file, indent=4)
 
 
 def main(rank : int, 
@@ -108,7 +102,7 @@ def main(rank : int,
         num_warmup_steps=50,
         num_training_steps=len(train_dataloader) * num_epochs
     )
-    metrics = get_metrics(num_labels, rank)
+    metrics = Metrics(num_labels, rank)
     output_filepath = f"output/{model_name}-{train_langs}/train.json"
 
     train(model, train_dataloader, rank, num_epochs, optimizer, lr_scheduler, metrics, output_filepath)

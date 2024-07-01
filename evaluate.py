@@ -7,15 +7,14 @@ import transformers
 from transformers import AutoModelForSequenceClassification
 import torch
 from torch.utils.data import DataLoader
-import torchmetrics
 
 from utils.corpus_load import load_data, REGISTERS
-from utils.metrics import get_metrics, add_batch, get_metric_summary, reset_metrics, save_cf_matrix
+from utils.metrics import Metrics, save_cf_matrix
 
 def evaluate(model : transformers.PreTrainedModel, 
-             test_dataloader : torch.utils.data.DataLoader, 
+             test_dataloader : DataLoader, 
              device : torch.device, 
-             metrics : dict[str, torchmetrics.Metric],
+             metrics : Metrics,
              output_filepath : str,
              eval_lang : str
              ) -> None:
@@ -32,7 +31,7 @@ def evaluate(model : transformers.PreTrainedModel,
         
         outputs = outputs.logits
         preds = torch.argmax(outputs, dim=-1)
-        add_batch(metrics, preds, batch["labels"])
+        metrics.add_batch(preds, batch["labels"])
 
         all_labels.append(batch["labels"].cpu())
         all_preds.append(preds.cpu())
@@ -40,13 +39,8 @@ def evaluate(model : transformers.PreTrainedModel,
     total_time = time.time() - eval_start_time
     print(f"end evaluation | total time: {int(total_time // 60)}m{total_time % 60:.2f}s")
     
-    metric_summary = get_metric_summary(metrics)
-    with open(output_filepath + "eval.json", "a+") as file:
-        evals = json.load(file)
-        evals[eval_lang] = metric_summary
-        file.seek(0) # reset read/write pointer to overwrite
-        json.dump(evals, file, indent=4)
-    reset_metrics(metrics)
+    metrics.write_summary(output_filepath + "eval.json", eval_lang)
+    metrics.reset()
 
     save_cf_matrix(torch.cat(all_preds), torch.cat(all_labels), output_filepath + f"cfm/{eval_lang}.png")
 
@@ -71,7 +65,7 @@ def main(model_name : str, train_langs : str, eval_lang : str) -> None:
     test_dataset = load_data(eval_lang_tsv, checkpoint)
     test_dataloader = DataLoader(test_dataset, batch_size=64)
 
-    metrics = get_metrics(num_labels, device)
+    metrics = Metrics(num_labels, device)
     output_filepath = f"output/{model_name}-{train_langs}/"
     
     evaluate(classifier, test_dataloader, device, metrics, output_filepath, eval_lang)
