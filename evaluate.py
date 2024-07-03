@@ -60,7 +60,7 @@ def main(model_name : str, train_langs : str, eval_lang : str) -> None:
         raise RuntimeError(f"Model not found, incorrect model name {model_name} or no saved model has been trained on specified language(s) {train_langs}") from e
     classifier.to(device)
 
-    eval_lang_tsv = f"/test/{eval_lang}.tsv"
+    eval_lang_tsv = f"test/{eval_lang}.tsv"
     test_dataset = load_data(eval_lang_tsv, checkpoint)
     test_dataloader = DataLoader(test_dataset, batch_size=64)
 

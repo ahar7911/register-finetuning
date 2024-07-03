@@ -7,7 +7,7 @@ from transformers import AutoTokenizer
 
 REGISTERS = ('IN', 'IP/OP', 'RN', 'JN', 'HI', 'LY', 'NID', 'AID')
 REG2ID = {reg : REGISTERS.index(reg) for reg in REGISTERS}
-CORPUS_FILEPATH = "../register-corpus/corpus"
+CORPUS_FILEPATH = "../register-corpus/corpus/"
 
 class RegisterDataset(Dataset):
     def __init__(self, encoded_texts : dict[str, list[torch.Tensor]], registers : list[int]) -> None:
@@ -39,5 +39,5 @@ def load_data(filepath : str, model_checkpoint : str) -> Dataset:
     
     return RegisterDataset(encoded_texts, registers)
 
-load_data("/test/al.tsv", "cis-lmu/glot500-base")
+load_data("/al.tsv", "cis-lmu/glot500-base")
 print("success!")

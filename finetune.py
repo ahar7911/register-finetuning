@@ -89,7 +89,7 @@ def main(rank : int,
     model.to(rank)
     model = DDP(model, device_ids=[rank])
 
-    train_lang_tsv = f"/train/{train_langs}.tsv"
+    train_lang_tsv = f"train/{train_langs}.tsv"
     train_dataset = load_data(train_lang_tsv, checkpoint)
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, 
                                                  pin_memory=True, 
