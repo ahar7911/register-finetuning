@@ -13,7 +13,7 @@ source /home2020/home/lilpa/harbison/experiences/env/bin/activate
 
 models=("mbert" "xlm-r" "glot500")
 train_langs=("en" "fi" "fr" "sv" "id" "tr")
-eval_langs=("en" "fi" "fr" "sv" "id" "tr")
+eval_langs=("al")
 
 for model in "${models[@]}"; do
     for train_lang in "${train_langs[@]}"; do
