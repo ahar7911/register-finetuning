@@ -32,12 +32,8 @@ def load_data(filepath : str, model_checkpoint : str) -> Dataset:
     tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
     
     texts = dataset.iloc[:,1].tolist()
-    print(texts)
     encoded_texts = dict(tokenizer(texts, return_tensors='pt', padding='max_length', truncation=True))
     registers = dataset.iloc[:,0].tolist()
     registers = [REG2ID[reg] for reg in registers]
     
     return RegisterDataset(encoded_texts, registers)
-
-load_data("/al.tsv", "cis-lmu/glot500-base")
-print("success!")
