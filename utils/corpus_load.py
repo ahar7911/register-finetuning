@@ -37,3 +37,6 @@ def load_data(filepath : str, model_checkpoint : str) -> Dataset:
     registers = [REG2ID[reg] for reg in registers]
     
     return RegisterDataset(encoded_texts, registers)
+
+load_data("/test/al.tsv", "cis-lmu/glot500-base")
+print("success!")
