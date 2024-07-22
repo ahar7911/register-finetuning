@@ -11,15 +11,15 @@ import seaborn as sn
 def save_tvt_matrix(model : str, 
                     avg : str = "micro",
                     train_langs : list[str] = ["en", "fr", "fi", "id", "sv", "tr"],
-                    test_langs : list[str] = ["en", "fr", "fi", "id", "sv", "tr", "al"]):    
+                    eval_langs : list[str] = ["en", "fr", "fi", "id", "sv", "tr", "al"]):    
     
-    df = pd.DataFrame(index=test_langs, columns=train_langs)
+    df = pd.DataFrame(index=eval_langs, columns=train_langs)
     for train_lang in train_langs:
         with open(f"output/{model}-{train_lang}/eval.json", "r") as file:
             metric_summary = json.load(file)
         
-        for test_lang, metrics in metric_summary.items():
-            df[test_lang][train_lang] = metrics[f"{avg}_f1"]
+        for eval_lang, metrics in metric_summary.items():
+            df.at[eval_lang, train_lang] = metrics[f"{avg}_f1"]
     
     plt.figure(figsize=(10, 8))
     sn.heatmap(df, annot=True, cbar_kws={'label': f'{avg}_f1'})
