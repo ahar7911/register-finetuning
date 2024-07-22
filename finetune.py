@@ -114,7 +114,7 @@ def main(rank : int,
 if __name__ == "__main__":
     parser = ArgumentParser(prog="Register fine-tuning",
                             description="Fine-tuning LLMs for multilingual classification of registers")
-    parser.add_argument("--model", choices=["mbert", "xlm-r", "glot500"], required=True,
+    parser.add_argument("--model", choices=["mbert", "xlmr", "glot500"], required=True,
                         help="LLM to finetune")
     parser.add_argument("--train_langs", required=True,
                         help="Language(s) to finetune register classification on")

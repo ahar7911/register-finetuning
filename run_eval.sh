@@ -10,7 +10,7 @@
 module load python/python-3.11.3
 source /home2020/home/lilpa/harbison/experiences/env/bin/activate
 
-models=("mbert" "xlm-r" "glot500")
+models=("mbert" "xlmr" "glot500")
 train_langs=("en" "fi" "fr" "sv" "id" "tr")
 eval_langs=("al")
 

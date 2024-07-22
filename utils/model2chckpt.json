@@ -1,5 +1,5 @@
 {
     "mbert": "google-bert/bert-base-multilingual-cased", 
-    "xlm-r": "FacebookAI/xlm-roberta-base",
+    "xlmr": "FacebookAI/xlm-roberta-base",
     "glot500": "cis-lmu/glot500-base"
 }
