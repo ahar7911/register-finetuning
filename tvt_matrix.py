@@ -2,6 +2,7 @@ import os
 import glob
 import json
 
+from collections import defaultdict
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sn 
@@ -11,7 +12,7 @@ def save_tvt_matrix(model : str, avg : str = "micro"): # tvt : train (lang) vs. 
     if not filepaths:
         print("Directory 'output' does not exist, or no (evaluations of) finetuned models exist")
     
-    metric_dict = {}
+    metric_dict = defaultdict(dict)
     for filepath in filepaths:
         dirname = os.path.dirname(filepath)
         model_train_lang = os.path.basename(dirname)
