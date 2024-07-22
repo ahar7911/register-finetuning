@@ -23,7 +23,7 @@ def save_tvt_matrix(model : str,
     
     print(df)
     plt.figure(figsize=(10, 8))
-    sn.heatmap(df, annot=True, cbar_kws={'label': f'{avg}_f1'})
+    sn.heatmap(df, annot=True)
     plt.title(f"{model} {avg} f1")
     plt.xlabel('train lang')
     plt.ylabel('test lang')
