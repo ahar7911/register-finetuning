@@ -26,10 +26,9 @@ def save_tvt_matrix(model : str,
     plt.title(f"{model} {avg} f1")
     plt.xlabel('train lang')
     plt.ylabel('test lang')
-    plt.savefig(f"output/{model}-{avg}_f1.png", bbox_inches="tight")
+    plt.savefig(f"output/tvt/{model}-{avg}.png", bbox_inches="tight")
 
 if __name__ == "__main__":
-    save_tvt_matrix("mbert")
-    # for model in ["mbert", "xlmr", "glot500"]:
-    #     for avg in ["micro", "macro"]:
-    #         save_tvt_matrix(model, avg)
+    for model in ["mbert", "xlmr", "glot500"]:
+        for avg in ["micro", "macro"]:
+            save_tvt_matrix(model, avg)
