@@ -13,16 +13,14 @@ def save_tvt_matrix(model : str,
                     train_langs : list[str] = ["en", "fr", "fi", "id", "sv", "tr"],
                     eval_langs : list[str] = ["en", "fr", "fi", "id", "sv", "tr", "al"]):    
     
-    df = pd.DataFrame(index=eval_langs, columns=train_langs)
+    df = pd.DataFrame(index=eval_langs, columns=train_langs).astype(float)
     for train_lang in train_langs:
         with open(f"output/{model}-{train_lang}/eval.json", "r") as file:
             metric_summary = json.load(file)
         
         for eval_lang, metrics in metric_summary.items():
             df.at[eval_lang, train_lang] = metrics[f"{avg}_f1"]
-    df = df.astype(float)
-    print(df)
-    print(df.dtypes)
+
     plt.figure(figsize=(10, 8))
     sn.heatmap(df, annot=True)
     plt.title(f"{model} {avg} f1")
