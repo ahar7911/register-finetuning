@@ -20,7 +20,7 @@ def save_tvt_matrix(model : str,
         
         for eval_lang, metrics in metric_summary.items():
             df.at[eval_lang, train_lang] = metrics[f"{avg}_f1"]
-    
+    df = df.astype(float)
     print(df)
     print(df.dtypes)
     plt.figure(figsize=(10, 8))
