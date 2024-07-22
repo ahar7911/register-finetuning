@@ -63,4 +63,6 @@ def save_cf_matrix(preds : torch.Tensor,
 
     plt.figure(figsize = (12,7))
     sn.heatmap(df_cm, vmin=0.0, vmax=1.0, cmap="Purples", annot=True)
+    plt.xlabel('predicted')
+    plt.ylabel('expected (true labels)')
     plt.savefig(output_filepath, bbox_inches="tight")
