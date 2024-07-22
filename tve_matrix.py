@@ -8,12 +8,11 @@ import matplotlib
 import matplotlib.pyplot as plt
 import seaborn as sn 
 
-# tve : train (lang) vs. eval (lang)
 def plot_matrix(ax : matplotlib.axes.Axes,
                 model : str, 
-                avg : str = "micro",
-                train_langs : list[str] = ["en", "fr", "fi", "id", "sv", "tr"],
-                eval_langs : list[str] = ["en", "fr", "fi", "id", "sv", "tr", "al"],
+                avg : str, # = "micro",
+                train_langs : list[str], # = ["en", "fr", "fi", "id", "sv", "tr"],
+                eval_langs : list[str], # = ["en", "fr", "fi", "id", "sv", "tr", "al"],
                 ) -> None:    
     df = pd.DataFrame(index=eval_langs, columns=train_langs).astype(float)
     for train_lang in train_langs:
@@ -24,9 +23,9 @@ def plot_matrix(ax : matplotlib.axes.Axes,
             df.at[eval_lang, train_lang] = metrics[f"{avg}_f1"]
 
     sn.heatmap(df, vmin=0.0, vmax=1.0, cmap="Purples", annot=True, cbar=False, ax=ax)
-    ax.title(f"{model} {avg} f1")
-    ax.xlabel('train lang')
-    ax.ylabel('eval lang')
+    ax.set_title(f"{model} {avg} f1")
+    ax.set_xlabel('train lang')
+    ax.set_ylabel('eval lang')
 
 def get_langs(model : str, 
               basedir : str = "output"
@@ -59,13 +58,12 @@ def main(models : list[str] = ["mbert", "xlmr", "glot500"],
          avgs : list[str] = ["micro", "macro"]
          ) -> None:
     
-    fig, axs = plt.subplots(len(avgs), len(models))
-    fig.title = "train vs. eval lang"
+    fig, axs = plt.subplots(len(avgs), len(models), figsize=(12, 10))
+    fig.suptitle("train vs. eval lang", fontsize=16)
     for model_ind, model in enumerate(models):
         train_langs, eval_langs = get_langs(model)
         for avg_ind, avg in enumerate(avgs):
-            ax_ind = (model_ind) + (avg_ind * 3)
-            plot_matrix(axs[ax_ind], model, avg, train_langs=train_langs, eval_langs=eval_langs)
+            plot_matrix(axs[avg_ind, model_ind], model, avg, train_langs=train_langs, eval_langs=eval_langs)
     fig.savefig(f"output/tve.png", bbox_inches="tight")
 
 if __name__ == "__main__":
