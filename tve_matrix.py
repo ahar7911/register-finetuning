@@ -43,10 +43,9 @@ def get_langs(model : str,
             train_langs.append(lang)
             
             json_path = os.path.join(basedir, folder, 'eval.json')
-            if os.path.isfile(json_path):
-                with open(json_path, 'r') as file:
-                    metrics = json.load(file)
-                    eval_langs.update(list(metrics.keys()))
+            with open(json_path, 'r') as file:
+                metrics = json.load(file)
+                eval_langs.update(list(metrics.keys()))
 
     only_eval_langs = list(eval_langs - set(train_langs))
     train_langs = sorted(train_langs)
@@ -57,13 +56,13 @@ def get_langs(model : str,
 def main(models : list[str] = ["mbert", "xlmr", "glot500"],
          avgs : list[str] = ["micro", "macro"]
          ) -> None:
-    
-    fig, axs = plt.subplots(len(avgs), len(models), figsize=(12, 10))
-    fig.suptitle("train vs. eval lang", fontsize=16)
+    fig, axs = plt.subplots(nrows=len(avgs), ncols=len(models), figsize=(12, 10))
+    fig.suptitle("train vs. eval lang", fontsize=20)
     for model_ind, model in enumerate(models):
         train_langs, eval_langs = get_langs(model)
         for avg_ind, avg in enumerate(avgs):
-            plot_matrix(axs[avg_ind, model_ind], model, avg, train_langs=train_langs, eval_langs=eval_langs)
+            plot_matrix(axs[avg_ind, model_ind], model, avg, train_langs, eval_langs)
+    fig.tight_layout()
     fig.savefig(f"output/tve.png", bbox_inches="tight")
 
 if __name__ == "__main__":
