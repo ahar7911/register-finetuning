@@ -62,5 +62,5 @@ def save_cf_matrix(preds : torch.Tensor,
     df_cm = pd.DataFrame(cf_matrix, index=REGISTERS, columns=REGISTERS)
 
     plt.figure(figsize = (12,7))
-    sn.heatmap(df_cm, annot=True, cmap="Purples")
+    sn.heatmap(df_cm, vmin=0.0, vmax=1.0, cmap="Purples", annot=True)
     plt.savefig(output_filepath, bbox_inches="tight")

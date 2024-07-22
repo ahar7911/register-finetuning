@@ -22,7 +22,7 @@ def save_tvt_matrix(model : str,
             df.at[eval_lang, train_lang] = metrics[f"{avg}_f1"]
 
     plt.figure(figsize=(10, 8))
-    sn.heatmap(df, annot=True, cmap="Purples")
+    sn.heatmap(df, vmin=0.0, vmax=1.0, cmap="Purples", annot=True)
     plt.title(f"{model} {avg} f1")
     plt.xlabel('train lang')
     plt.ylabel('test lang')
