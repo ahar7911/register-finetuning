@@ -7,24 +7,20 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sn 
 
-def save_tvt_matrix(model : str, avg : str = "micro"): # tvt : train (lang) vs. test (lang)
-    filepaths = glob.glob("output/" + model + "-*/eval.json")
-    if not filepaths:
-        print("Directory 'output' does not exist, or no (evaluations of) finetuned models exist")
+# tvt : train (lang) vs. test (lang)
+def save_tvt_matrix(model : str, 
+                    avg : str = "micro",
+                    train_langs : list[str] = ["en", "fr", "fi", "id", "sv", "tr"],
+                    test_langs : list[str] = ["en", "fr", "fi", "id", "sv", "tr", "al"]):    
     
-    metric_dict = defaultdict(dict)
-    for filepath in filepaths:
-        dirname = os.path.dirname(filepath)
-        model_train_lang = os.path.basename(dirname)
-        _, train_lang = model_train_lang.split("-")
-
-        with open(filepath, "r") as file:
+    df = pd.DataFrame(index=test_langs, columns=train_langs)
+    for train_lang in train_langs:
+        with open(f"output/{model}-{train_lang}/eval.json", "r") as file:
             metric_summary = json.load(file)
         
         for test_lang, metrics in metric_summary.items():
-            metric_dict[train_lang][test_lang] = metrics[f"{avg}_f1"]
+            df[test_lang][train_lang] = metrics[f"{avg}_f1"]
     
-    df = pd.DataFrame.from_dict(metric_dict)
     plt.figure(figsize=(10, 8))
     sn.heatmap(df, annot=True, cbar_kws={'label': f'{avg}_f1'})
     plt.title(f"{model} {avg} f1")
@@ -33,7 +29,7 @@ def save_tvt_matrix(model : str, avg : str = "micro"): # tvt : train (lang) vs. 
     plt.savefig(f"output/{model}-{avg}_f1.png", bbox_inches="tight")
 
 if __name__ == "__main__":
-    save_tvt_matrix("mbert", "micro")
+    save_tvt_matrix("mbert")
     # for model in ["mbert", "xlmr", "glot500"]:
     #     for avg in ["micro", "macro"]:
     #         save_tvt_matrix(model, avg)
