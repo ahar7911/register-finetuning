@@ -7,7 +7,7 @@
 #SBATCH --time 01:59:00
 #SBATCH --output=output/eval.txt
 
-module load python/python-3.11.3
+module load python/python-3.11.4
 source /home2020/home/lilpa/harbison/experiences/env/bin/activate
 
 models=("glot500")
