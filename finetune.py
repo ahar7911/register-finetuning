@@ -106,6 +106,8 @@ def main(rank : int,
                                 batch_size=batch_size, 
                                 pin_memory=True, 
                                 sampler=DistributedSampler(train_dataset))
+
+    print("LENGTH OF VALIDATION:" + len(val_dataset))
     
     optimizer = torch.optim.AdamW(model.parameters(), lr=5e-5)
     lr_scheduler = get_scheduler(
