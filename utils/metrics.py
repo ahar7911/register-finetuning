@@ -44,12 +44,8 @@ class Metrics:
                 path.parent.mkdir(parents=True)
             past_summaries = {}
         
-        print(past_summaries)
-        
         summary = self.get_summary()
         past_summaries[key] = summary
-
-        print(past_summaries)
 
         with open(path, "w") as file:
             json.dump(past_summaries, file, indent=4)
