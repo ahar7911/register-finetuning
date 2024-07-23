@@ -21,7 +21,7 @@ else:
     print(f"register abbreviation json file not found at {reg_abbv_path}, check if path is correct or register-corpus path {CORPUS_PATH} is correct")
     sys.exit(1)
 
-REGISTERS = REG_ABBV2NAME.keys()
+REGISTERS = list(REG_ABBV2NAME.keys())
 REG2ID = {reg : REGISTERS.index(reg) for reg in REGISTERS}
 
 class RegisterDataset(Dataset):
