@@ -70,7 +70,7 @@ def train(model : DDP,
 
         metrics.write_summary(out_path, epoch_str)
         
-        evaluate(model, val_dataloader, rank, out_path, metric_key=epoch_str + ": validation", store_cfm=False)
+        evaluate(model, val_dataloader, rank, metrics, out_path, metric_key=epoch_str + ": validation", store_cfm=False)
 
     total_time = time.time() - train_start_time
     print(f"gpu{rank}: end training | total time: {int(total_time // 60)}m{total_time % 60:.2f}s")

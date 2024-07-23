@@ -22,6 +22,9 @@ def evaluate(model : transformers.PreTrainedModel,
              eval_lang : str = None
              ) -> None:
     if store_cfm:
+        if eval_lang is None:
+            print("eval_lang cannot be None is store_cfm is true, ending evaluation", file=sys.stderr)
+            return None
         all_labels = []
         all_preds = []
     
