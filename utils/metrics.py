@@ -70,5 +70,5 @@ def save_cfm(preds : torch.Tensor,
     if not out_path.parent.exists(): # cfm directory does not exist yet
         out_path.parent.mkdir(parents=True)
 
-    with open(out_path, "w") as file:
+    with open(out_path, "w") as file: # overwrites existing cfm matrix, if exists
         json.dump(df_cm.T.to_dict(), file, indent=4)

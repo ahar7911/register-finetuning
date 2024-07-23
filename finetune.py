@@ -38,7 +38,7 @@ def train(model : DDP,
           optimizer : torch.optim.Optimizer, 
           lr_scheduler : torch.optim.lr_scheduler.LambdaLR, 
           metrics : Metrics, 
-          out_path : str
+          out_path : Path
           ) -> None:
 
     train_start_time = time.time()
@@ -117,8 +117,8 @@ def main(rank : int,
     metrics = Metrics(num_labels, rank)
     out_path = Path(f"output/{model_name}-{train_langs}/train.json")
 
-    if not out_path.parent.exists():
-        out_path.parent.mkdir(parents=True)
+    out_path.parent.mkdir(parents=True, exist_ok=True) # makes output dir
+    out_path.unlink(missing_ok=True) # removes train.json if it already exists
 
     train(model, train_dataloader, val_dataloader, rank, num_epochs, optimizer, lr_scheduler, metrics, out_path)
     model.module.save_pretrained(Path(f"./models/{model_name}-{train_langs}/"), from_pt=True) # creates necessary subfolders if required

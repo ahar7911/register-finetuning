@@ -79,8 +79,8 @@ def main(model_name : str, train_langs : str, eval_lang : str) -> None:
     metrics = Metrics(num_labels, device)
     out_path = Path(f"output/{model_name}-{train_langs}/eval.json")
 
-    if not out_path.parent.exists():
-        out_path.parent.mkdir(parents=True)
+    out_path.parent.mkdir(parents=True, exist_ok=True) # makes output dir
+    out_path.unlink(missing_ok=True) # removes eval.json if it already exists
     
     evaluate(classifier, test_dataloader, device, metrics, out_path, metric_key=eval_lang, eval_lang=eval_lang)
     
