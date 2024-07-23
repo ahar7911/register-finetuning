@@ -17,13 +17,17 @@ def evaluate(model : transformers.PreTrainedModel,
              device : torch.device, 
              metrics : Metrics,
              out_path : str,
-             eval_lang : str
+             metric_key : str,
+             store_cfm : bool = True,
+             eval_lang : str = None
              ) -> None:
-    all_labels = []
-    all_preds = []
+    if store_cfm:
+        all_labels = []
+        all_preds = []
     
     model.eval()
     eval_start_time = time.time()
+    metrics.reset()
     for batch in test_dataloader:
         batch = {k: v.to(device) for k, v in batch.items()}
 
@@ -34,17 +38,20 @@ def evaluate(model : transformers.PreTrainedModel,
         preds = torch.argmax(outputs, dim=-1)
         metrics.add_batch(preds, batch["labels"])
 
-        all_labels.append(batch["labels"].cpu())
-        all_preds.append(preds.cpu())
+        if store_cfm:
+            all_labels.append(batch["labels"].cpu())
+            all_preds.append(preds.cpu())
 
     total_time = time.time() - eval_start_time
     print(f"end evaluation | total time: {int(total_time // 60)}m{total_time % 60:.2f}s")
     
-    metrics.write_summary(out_path / "eval.json", eval_lang)
-    metrics.reset()
+    metrics.write_summary(out_path, metric_key)
+    print("metrics saved")
 
-    save_cfm(torch.cat(all_preds), torch.cat(all_labels), out_path / f"cfm/{eval_lang}.json")
-    print("metrics and cf matrix saved")
+    if store_cfm:
+        cfm_path = out_path.parent / f"cfm/{eval_lang}.json"
+        save_cfm(torch.cat(all_preds), torch.cat(all_labels), cfm_path)
+        print("confusion matrices saved")
 
 
 def main(model_name : str, train_langs : str, eval_lang : str) -> None:
@@ -67,12 +74,12 @@ def main(model_name : str, train_langs : str, eval_lang : str) -> None:
     test_dataloader = DataLoader(test_dataset, batch_size=64)
 
     metrics = Metrics(num_labels, device)
-    out_path = Path(f"output/{model_name}-{train_langs}")
+    out_path = Path(f"output/{model_name}-{train_langs}/eval.json")
 
-    if not out_path.exists():
-        out_path.mkdir(parents=True)
+    if not out_path.parent.exists():
+        out_path.parent.mkdir(parents=True)
     
-    evaluate(classifier, test_dataloader, device, metrics, out_path, eval_lang)
+    evaluate(classifier, test_dataloader, device, metrics, out_path, metric_key=eval_lang, eval_lang=eval_lang)
     
 
 if __name__ == "__main__":

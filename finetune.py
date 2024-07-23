@@ -6,7 +6,7 @@ from pathlib import Path
 import json
 
 import torch
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, random_split
 from transformers import AutoModelForSequenceClassification, get_scheduler
 
 import torch.multiprocessing as mp
@@ -16,6 +16,7 @@ from torch.distributed import init_process_group, destroy_process_group
 
 from utils.corpus_load import load_data, REGISTERS
 from utils.metrics import Metrics
+from evaluate import evaluate
 
 def ddp_setup(rank, world_size):
     """
@@ -30,7 +31,8 @@ def ddp_setup(rank, world_size):
 
 
 def train(model : DDP, 
-          train_dataloader : DataLoader, 
+          train_dataloader : DataLoader,
+          val_dataloader : DataLoader, 
           rank : int,
           num_epochs: int,
           optimizer : torch.optim.Optimizer, 
@@ -45,6 +47,7 @@ def train(model : DDP,
     for epoch in range(num_epochs):
         model.train()
         epoch_start_time = time.time()
+        metrics.reset()
 
         for batch in train_dataloader:       
             batch = {k: v.to(rank) for k, v in batch.items()}
@@ -66,7 +69,8 @@ def train(model : DDP,
         print(f"gpu{rank}: {epoch_str} | loss: {loss} | time: {int(epoch_time // 60)}m{epoch_time % 60:.2f}s")
 
         metrics.write_summary(out_path, epoch_str)
-        metrics.reset()
+        
+        evaluate(model, val_dataloader, rank, out_path, metric_key=epoch_str + ": validation", store_cfm=False)
 
     total_time = time.time() - train_start_time
     print(f"gpu{rank}: end training | total time: {int(total_time // 60)}m{total_time % 60:.2f}s")
@@ -92,10 +96,16 @@ def main(rank : int,
     model = DDP(model, device_ids=[rank])
 
     train_lang_tsv = Path(f"train/{train_langs}.tsv")
-    train_dataset = load_data(train_lang_tsv, checkpoint)
-    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, 
-                                                 pin_memory=True, 
-                                                 sampler=DistributedSampler(train_dataset))
+    dataset = load_data(train_lang_tsv, checkpoint)
+    train_dataset, val_dataset = random_split(dataset, [0.8, 0.2])
+    train_dataloader = DataLoader(train_dataset, 
+                                  batch_size=batch_size,
+                                  pin_memory=True,
+                                  sampler=DistributedSampler(train_dataset))
+    val_dataloader = DataLoader(val_dataset,
+                                batch_size=batch_size, 
+                                pin_memory=True, 
+                                sampler=DistributedSampler(train_dataset))
     
     optimizer = torch.optim.AdamW(model.parameters(), lr=5e-5)
     lr_scheduler = get_scheduler(
@@ -110,7 +120,7 @@ def main(rank : int,
     if not out_path.parent.exists():
         out_path.parent.mkdir(parents=True)
 
-    train(model, train_dataloader, rank, num_epochs, optimizer, lr_scheduler, metrics, out_path)
+    train(model, train_dataloader, val_dataloader, rank, num_epochs, optimizer, lr_scheduler, metrics, out_path)
     model.module.save_pretrained(Path(f"./models/{model_name}-{train_langs}/"), from_pt=True) # creates necessary subfolders if required
 
     destroy_process_group()
