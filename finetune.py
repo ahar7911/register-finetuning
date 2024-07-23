@@ -1,6 +1,8 @@
 from argparse import ArgumentParser
+import sys
 import os
 import time
+from pathlib import Path
 import json
 
 import torch
@@ -34,7 +36,7 @@ def train(model : DDP,
           optimizer : torch.optim.Optimizer, 
           lr_scheduler : torch.optim.lr_scheduler.LambdaLR, 
           metrics : Metrics, 
-          output_filepath : str
+          out_path : str
           ) -> None:
 
     train_start_time = time.time()
@@ -63,7 +65,7 @@ def train(model : DDP,
         epoch_time = time.time() - epoch_start_time
         print(f"gpu{rank}: {epoch_str} | loss: {loss} | time: {int(epoch_time // 60)}m{epoch_time % 60:.2f}s")
 
-        metrics.write_summary(output_filepath, epoch_str)
+        metrics.write_summary(out_path, epoch_str)
         metrics.reset()
 
     total_time = time.time() - train_start_time
@@ -79,7 +81,7 @@ def main(rank : int,
          ) -> None:
     ddp_setup(rank, world_size)
 
-    with open("utils/model2chckpt.json") as file:
+    with open(Path("utils/model2chckpt.json")) as file:
         model2chckpt = json.load(file)
 
     checkpoint = model2chckpt[model_name]
@@ -89,7 +91,7 @@ def main(rank : int,
     model.to(rank)
     model = DDP(model, device_ids=[rank])
 
-    train_lang_tsv = f"train/{train_langs}.tsv"
+    train_lang_tsv = Path(f"train/{train_langs}.tsv")
     train_dataset = load_data(train_lang_tsv, checkpoint)
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, 
                                                  pin_memory=True, 
@@ -103,10 +105,13 @@ def main(rank : int,
         num_training_steps=len(train_dataloader) * num_epochs
     )
     metrics = Metrics(num_labels, rank)
-    output_filepath = f"output/{model_name}-{train_langs}/train.json"
+    out_path = Path(f"output/{model_name}-{train_langs}/train.json")
 
-    train(model, train_dataloader, rank, num_epochs, optimizer, lr_scheduler, metrics, output_filepath)
-    model.module.save_pretrained(f"./models/{model_name}-{train_langs}/", from_pt=True)
+    if not out_path.parent.exists():
+        out_path.parent.mkdir(parents=True)
+
+    train(model, train_dataloader, rank, num_epochs, optimizer, lr_scheduler, metrics, out_path)
+    model.module.save_pretrained(Path(f"./models/{model_name}-{train_langs}/"), from_pt=True) # creates necessary subfolders if required
 
     destroy_process_group()
 

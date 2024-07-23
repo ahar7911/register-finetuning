@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 import json
 import numpy as np
 import pandas as pd
@@ -35,24 +35,26 @@ class Metrics:
             metric_summary = {**metric_summary, name : metric.compute().item()}
         return metric_summary
     
-    def write_summary(self, filepath : str, key : str):
-        if os.path.exists(filepath):
-            with open(filepath, "r") as file:
+    def write_summary(self, path : Path, key : str):
+        if path.exists() and path.is_file():
+            with open(path, "r") as file:
                 past_summaries = json.load(file)
         else:
+            if not path.parent.exists():
+                path.parent.mkdir(parents=True)
             past_summaries = {}
         
         summary = self.get_summary()
         past_summaries[key] = summary
 
-        with open(filepath, "w") as file:
+        with open(path, "w") as file:
             json.dump(past_summaries, file, indent=4)
 
 
 # modified from https://christianbernecker.medium.com/how-to-create-a-confusion-matrix-in-pytorch-38d06a7f04b7
 def save_cfm(preds : torch.Tensor, 
                    labels : torch.Tensor, 
-                   output_filepath : str
+                   out_path : Path
                    ) -> None:
     cf_matrix = confusion_matrix(labels, preds, labels=range(len(REGISTERS)))
     register_totals = np.sum(cf_matrix, axis=1)
@@ -61,5 +63,8 @@ def save_cfm(preds : torch.Tensor,
     row_labels = [f"{reg}\n(total:{total})" for reg, total in zip(REGISTERS, register_totals)]
     df_cm = pd.DataFrame(cf_matrix, index=row_labels, columns=REGISTERS)
 
-    with open(output_filepath, "w") as file:
+    if not out_path.parent.exists(): # cfm directory does not exist yet
+        out_path.parent.mkdir(parents=True)
+
+    with open(out_path, "w") as file:
         json.dump(df_cm.T.to_dict(), file, indent=4)

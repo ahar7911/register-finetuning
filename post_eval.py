@@ -10,8 +10,9 @@ import seaborn as sn
 
 from utils.corpus_load import CORPUS_PATH
 
+base_dir = Path("output")
 
-def confusion_matrices(base_dir : Path = Path("output")):
+def confusion_matrices():
     for model_folder in base_dir.iterdir():
         if not model_folder.is_dir():
             continue
@@ -43,7 +44,7 @@ def confusion_matrices(base_dir : Path = Path("output")):
         axes = axes.flatten()
 
         # obtaining corpus summary statistics
-        summary_path = CORPUS_PATH / "summaries" / f"{train_lang}.json"
+        summary_path = CORPUS_PATH / f"summaries/{train_lang}.json"
         if summary_path.exists():
             with open(summary_path) as summary_file:
                 train_lang_summary = json.load(summary_file)["counts"]
@@ -79,18 +80,16 @@ def confusion_matrices(base_dir : Path = Path("output")):
         print(f"confusion matrices for {model} trained on {train_lang} saved")
 
 
-
 def plot_tve_matrix(ax : matplotlib.axes.Axes,
                 model : str, 
                 metric : str,
                 train_langs : list[str], # = ["en", "fr", "fi", "id", "sv", "tr"],
-                eval_langs : list[str], # = ["en", "fr", "fi", "id", "sv", "tr", "al"],
-                base_dir : Path = Path("output")
+                eval_langs : list[str] # = ["en", "fr", "fi", "id", "sv", "tr", "al"],
                 ) -> None:
     # constructing train vs. eval dataframe for specified model and metric   
     tve_df = pd.DataFrame(index=train_langs, columns=eval_langs).astype(float)
     for train_lang in train_langs:
-        metrics_path = base_dir / f"{model}-{train_lang}" / "eval.json"
+        metrics_path = base_dir / f"{model}-{train_lang}/eval.json"
         # don't test if metrics_path exists since get_all_train_eval_langs finds train langs through searching folders
         with open(metrics_path, "r") as file:
             metric_summary = json.load(file)
@@ -104,9 +103,7 @@ def plot_tve_matrix(ax : matplotlib.axes.Axes,
     ax.set_ylabel("train lang")
 
 
-def get_all_train_eval_langs(model : str, 
-              base_dir : Path = Path("output")
-              ) -> tuple[list[str], list[str]]:
+def get_all_train_eval_langs(model : str) -> tuple[list[str], list[str]]:
     train_langs = []
     eval_langs = set()
     
@@ -146,9 +143,8 @@ def tve_matrices(models : list[str] = ["mbert", "xlmr", "glot500"],
             print(f"tve matrix for {model} on metric {metric} plotted")
 
     fig.tight_layout()
-    fig.savefig("output/tve.png", bbox_inches="tight")
+    fig.savefig(base_dir / "tve.png", bbox_inches="tight")
     print("tve matrices saved")
-
 
 
 def main():
@@ -157,4 +153,8 @@ def main():
     tve_matrices()
 
 if __name__ == "__main__":
+    if not base_dir.exists() or not base_dir.is_dir() or not any(base_dir.iterdir()):
+        print(f"current filepath to output directory ({base_dir}) does not exist, is not a directory, or is empty", file=sys.stderr)
+        print("run evaluate.py on a finetuned model and an evaluation language, or run run_eval.sh", file=sys.stderr)
+        sys.exit(1)
     main()

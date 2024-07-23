@@ -1,5 +1,7 @@
 from argparse import ArgumentParser
+import sys
 import time
+from pathlib import Path
 import json
 
 import transformers
@@ -14,7 +16,7 @@ def evaluate(model : transformers.PreTrainedModel,
              test_dataloader : DataLoader, 
              device : torch.device, 
              metrics : Metrics,
-             output_filepath : str,
+             out_path : str,
              eval_lang : str
              ) -> None:
     all_labels = []
@@ -38,15 +40,15 @@ def evaluate(model : transformers.PreTrainedModel,
     total_time = time.time() - eval_start_time
     print(f"end evaluation | total time: {int(total_time // 60)}m{total_time % 60:.2f}s")
     
-    metrics.write_summary(output_filepath + "eval.json", eval_lang)
+    metrics.write_summary(out_path / "eval.json", eval_lang)
     metrics.reset()
 
-    save_cfm(torch.cat(all_preds), torch.cat(all_labels), output_filepath + f"cfm/{eval_lang}.json")
+    save_cfm(torch.cat(all_preds), torch.cat(all_labels), out_path / f"cfm/{eval_lang}.json")
     print("metrics and cf matrix saved")
 
 
 def main(model_name : str, train_langs : str, eval_lang : str) -> None:
-    with open("utils/model2chckpt.json") as file:
+    with open(Path("utils/model2chckpt.json")) as file:
         model2chckpt = json.load(file)
     
     checkpoint = model2chckpt[model_name]
@@ -55,18 +57,22 @@ def main(model_name : str, train_langs : str, eval_lang : str) -> None:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     try:
         classifier = AutoModelForSequenceClassification.from_pretrained(f"./models/{model_name}-{train_langs}")
-    except Exception as e:
-        raise RuntimeError(f"Model not found, incorrect model name {model_name} or no saved model has been trained on specified language(s) {train_langs}") from e
+    except:
+        print(f"model not found, incorrect model name {model_name} or no saved model has been trained on specified language(s) {train_langs}", file=sys.stderr)
+        sys.exit(1)
     classifier.to(device)
 
-    eval_lang_tsv = f"test/{eval_lang}.tsv"
+    eval_lang_tsv = Path(f"test/{eval_lang}.tsv")
     test_dataset = load_data(eval_lang_tsv, checkpoint)
     test_dataloader = DataLoader(test_dataset, batch_size=64)
 
     metrics = Metrics(num_labels, device)
-    output_filepath = f"output/{model_name}-{train_langs}/"
+    out_path = Path(f"output/{model_name}-{train_langs}")
+
+    if not out_path.exists():
+        out_path.mkdir(parents=True)
     
-    evaluate(classifier, test_dataloader, device, metrics, output_filepath, eval_lang)
+    evaluate(classifier, test_dataloader, device, metrics, out_path, eval_lang)
     
 
 if __name__ == "__main__":

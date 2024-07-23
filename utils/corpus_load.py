@@ -13,7 +13,7 @@ if not CORPUS_PATH.exists() or not CORPUS_PATH.is_dir() or not any(CORPUS_PATH.i
     print("edit the CORPUS_PATH variable in utils/corpus_load.py to the proper directory", file=sys.stderr)
     sys.exit(1)
 
-reg_abbv_path = CORPUS_PATH / "info" / "reg_abbv.json"
+reg_abbv_path = CORPUS_PATH / "info/reg_abbv.json"
 if reg_abbv_path.exists():
     with open(reg_abbv_path) as reg_abbv_file:
         REG_ABBV2NAME = json.load(reg_abbv_file)
@@ -38,11 +38,13 @@ class RegisterDataset(Dataset):
         return {**encoded_text, 'labels': torch.tensor(register)}
 
 
-def load_data(filepath : str, model_checkpoint : str) -> Dataset:
-    try:
-        dataset = pd.read_csv(CORPUS_PATH / "corpus" / filepath, sep='\t')
-    except FileNotFoundError as e:
-        print(f"{str(e)}\n corpus file not found, incorrect language specification or bad corpus filepath (see CORPUS_PATH in utils/corpus_load.py)", file=sys.stderr)
+def load_data(path : Path, model_checkpoint : str) -> Dataset:
+    path = CORPUS_PATH / "corpus" / path
+    
+    if path.exists():
+        dataset = pd.read_csv(path, sep='\t')
+    else:
+        print("corpus file not found, incorrect language specification or bad corpus filepath (see CORPUS_PATH in utils/corpus_load.py)", file=sys.stderr)
         sys.exit(1)
     tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
     
