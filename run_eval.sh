@@ -4,14 +4,14 @@
 #SBATCH -p publicgpu
 #SBATCH -N 1
 #SBATCH --exclusive
-#SBATCH --time 00:59:00
+#SBATCH --time 01:59:00
 #SBATCH --output=output/eval.txt
 
 module load python/python-3.11.3
 source /home2020/home/lilpa/harbison/experiences/env/bin/activate
 
-models=("mbert" "xlmr" "glot500")
-train_langs=("en" "fi" "fr" "sv" "id" "tr")
+models=("glot500")
+train_langs=("tr")
 eval_langs=("en" "fi" "fr" "sv" "id" "tr" "al")
 
 for model in "${models[@]}"; do
