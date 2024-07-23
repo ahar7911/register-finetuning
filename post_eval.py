@@ -8,6 +8,8 @@ import matplotlib
 import matplotlib.pyplot as plt
 import seaborn as sn 
 
+from utils.corpus_load import CORPUS_PATH
+
 
 def confusion_matrices(base_dir : Path = Path("output")):
     for model_folder in base_dir.iterdir():
@@ -31,14 +33,23 @@ def confusion_matrices(base_dir : Path = Path("output")):
             cfm_paths.remove(same_lang_path)
             cfm_paths.insert(0, same_lang_path) # move to the front
 
-        num_cols = math.ceil(math.sqrt(len(cfm_paths)))
-        num_rows = math.ceil(len(cfm_paths) / num_cols)
+        num_plots = len(cfm_paths) + 1
+        num_cols = math.ceil(math.sqrt(num_plots))
+        num_rows = math.ceil(num_plots / num_cols)
 
         fig, axes = plt.subplots(num_rows, num_cols, figsize=(7 * num_cols, 5 * num_rows))
         fig.suptitle(f"confusion matrices for {model} trained on {train_lang}", fontsize=20)
         axes = axes.flatten()
 
-        for ax, cfm_path in zip(axes, cfm_paths):
+        with open(CORPUS_PATH / "summaries" / f"{train_lang}.json") as summary_file:
+            train_lang_summary = json.load(summary_file)["counts"]
+            del train_lang_summary["total"]
+        axes[0].bar(*zip(*train_lang_summary.items()))
+        axes[0].set_title(f"number of texts per register in {train_lang} training data")
+        axes[0].set_xlabel("register")
+        axes[0].set_ylabel("number of texts")
+
+        for ax, cfm_path in zip(axes[1:], cfm_paths):
             eval_lang = cfm_path.stem
             with open(cfm_path, "r") as file:
                 cfm_dict = json.load(file)
@@ -49,7 +60,7 @@ def confusion_matrices(base_dir : Path = Path("output")):
             ax.set_xlabel("predicted")
             ax.set_ylabel("expected/actual (true labels)")
         
-        for i in range(len(cfm_paths), num_rows * num_cols):
+        for i in range(len(cfm_paths) + 1, num_rows * num_cols):
             fig.delaxes(axes[i])
         
         fig.tight_layout()
@@ -126,8 +137,9 @@ def tve_matrices(models : list[str] = ["mbert", "xlmr", "glot500"],
 
 def main():
     # confusion_matrices()
+    # print()
+    # tve_matrices()
     print()
-    tve_matrices()
 
 if __name__ == "__main__":
     main()
