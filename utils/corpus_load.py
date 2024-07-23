@@ -1,13 +1,28 @@
 import sys
+from pathlib import Path
+import json
 import pandas as pd
 
 import torch
 from torch.utils.data import Dataset
 from transformers import AutoTokenizer
 
-REGISTERS = ('IN', 'IP/OP', 'RN', 'JN', 'HI', 'LY', 'NID', 'AID')
+CORPUS_PATH = Path("../register-corpus") # path to repo register corpus
+if not CORPUS_PATH.exists() or not CORPUS_PATH.is_dir() or not any(CORPUS_PATH.iterdir()):
+    print(f"current filepath to register-corpus repo ({CORPUS_PATH}) does not exist, is not a directory, or is empty", file=sys.stderr)
+    print("edit the CORPUS_PATH variable in utils/corpus_load.py to the proper directory", file=sys.stderr)
+    sys.exit(1)
+
+reg_abbv_path = CORPUS_PATH / "info" / "reg_abbv.json"
+if reg_abbv_path.exists():
+    with open(reg_abbv_path) as reg_abbv_file:
+        REG_ABBV2NAME = json.load(reg_abbv_file)
+else:
+    print(f"register abbreviation json file not found at {reg_abbv_path}, check if path is correct or register-corpus path {CORPUS_PATH} is correct")
+    sys.exit(1)
+
+REGISTERS = REG_ABBV2NAME.keys()
 REG2ID = {reg : REGISTERS.index(reg) for reg in REGISTERS}
-CORPUS_FILEPATH = "../register-corpus/corpus/"
 
 class RegisterDataset(Dataset):
     def __init__(self, encoded_texts : dict[str, list[torch.Tensor]], registers : list[int]) -> None:
@@ -25,9 +40,9 @@ class RegisterDataset(Dataset):
 
 def load_data(filepath : str, model_checkpoint : str) -> Dataset:
     try:
-        dataset = pd.read_csv(CORPUS_FILEPATH + filepath, sep='\t')
+        dataset = pd.read_csv(CORPUS_PATH / "corpus" / filepath, sep='\t')
     except FileNotFoundError as e:
-        print(f"{str(e)}\n Corpus file not found, incorrect language specification", file=sys.stderr)
+        print(f"{str(e)}\n corpus file not found, incorrect language specification or bad corpus filepath (see CORPUS_PATH in utils/corpus_load.py)", file=sys.stderr)
         sys.exit(1)
     tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
     
