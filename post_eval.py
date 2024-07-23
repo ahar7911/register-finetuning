@@ -45,7 +45,7 @@ def confusion_matrices(base_dir : Path = Path("output")):
         # obtaining corpus summary statistics
         summary_path = CORPUS_PATH / "summaries" / f"{train_lang}.json"
         if summary_path.exists():
-            with open() as summary_file:
+            with open(summary_path) as summary_file:
                 train_lang_summary = json.load(summary_file)["counts"]
         else:
             print(f"invalid path to summary json file {summary_path} for lang {train_lang}", file=sys.stderr)
@@ -88,7 +88,7 @@ def plot_tve_matrix(ax : matplotlib.axes.Axes,
                 base_dir : Path = Path("output")
                 ) -> None:
     # constructing train vs. eval dataframe for specified model and metric   
-    tve_df = pd.DataFrame(index=eval_langs, columns=train_langs).astype(float)
+    tve_df = pd.DataFrame(index=train_langs, columns=eval_langs).astype(float)
     for train_lang in train_langs:
         metrics_path = base_dir / f"{model}-{train_lang}" / "eval.json"
         # don't test if metrics_path exists since get_all_train_eval_langs finds train langs through searching folders
@@ -96,12 +96,12 @@ def plot_tve_matrix(ax : matplotlib.axes.Axes,
             metric_summary = json.load(file)
         
         for eval_lang, metrics in metric_summary.items():
-            tve_df.at[eval_lang, train_lang] = metrics[f"{metric}"]
+            tve_df.at[train_lang, eval_lang] = metrics[f"{metric}"]
 
     sn.heatmap(tve_df, vmin=0.0, vmax=1.0, cmap="Purples", annot=True, cbar=False, ax=ax)
     ax.set_title(f"{model} {metric}")
-    ax.set_xlabel("train lang")
-    ax.set_ylabel("eval lang")
+    ax.set_xlabel("eval lang")
+    ax.set_ylabel("train lang")
 
 
 def get_all_train_eval_langs(model : str, 
@@ -136,7 +136,7 @@ def tve_matrices(models : list[str] = ["mbert", "xlmr", "glot500"],
                  ) -> None:
     fig, axes = plt.subplots(nrows=len(metrics), 
                              ncols=len(models),
-                             figsize=(4 * len(models), 5 * len(metrics)))
+                             figsize=(5 * len(models), 4 * len(metrics)))
     fig.suptitle("train vs. eval lang", fontsize=20)
 
     for model_ind, model in enumerate(models):
