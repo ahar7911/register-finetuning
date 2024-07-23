@@ -19,7 +19,7 @@ def confusion_matrices(base_dir : Path = Path("output")):
         cfm_folder = model_folder / "cfm"
         parts = model_folder.name.split("-")
         if len(parts) != 2:
-            print(f"subfolder {model_folder.name} of base directory {base_dir} is not of the generated type MODEL-TRAIN_LANG", file=sys.stderr)
+            print(f"subfolder {model_folder.name} of base directory {base_dir} is not of the generated type MODEL-TRAIN_LANG (did you manually add this folder?)", file=sys.stderr)
             continue
         model, train_lang = parts
 
@@ -28,12 +28,13 @@ def confusion_matrices(base_dir : Path = Path("output")):
             if path.is_file() and path.suffix == ".json":
                 cfm_paths.append(path)
 
+        # move cfm of evaluation on the same language as the training language to the front
         same_lang_path = cfm_folder / f"{train_lang}.json"
         if same_lang_path in cfm_paths:
             cfm_paths.remove(same_lang_path)
-            cfm_paths.insert(0, same_lang_path) # move to the front
+            cfm_paths.insert(0, same_lang_path)
 
-        num_plots = len(cfm_paths) + 1
+        num_plots = len(cfm_paths) + 1 # 1 more since we are plotting the corpus summary statistics
         num_cols = math.ceil(math.sqrt(num_plots))
         num_rows = math.ceil(num_plots / num_cols)
 
@@ -41,14 +42,23 @@ def confusion_matrices(base_dir : Path = Path("output")):
         fig.suptitle(f"confusion matrices for {model} trained on {train_lang}", fontsize=20)
         axes = axes.flatten()
 
-        with open(CORPUS_PATH / "summaries" / f"{train_lang}.json") as summary_file:
-            train_lang_summary = json.load(summary_file)["counts"]
-            del train_lang_summary["total"]
+        # obtaining corpus summary statistics
+        summary_path = CORPUS_PATH / "summaries" / f"{train_lang}.json"
+        if summary_path.exists():
+            with open() as summary_file:
+                train_lang_summary = json.load(summary_file)["counts"]
+        else:
+            print(f"invalid path to summary json file {summary_path} for lang {train_lang}", file=sys.stderr)
+            print(f"check if CORPUS_PATH in utils/corpus_load.py correctly directs to register-corpus directory, or rerun analyze_dist.sh in register-corpus", file=sys.stderr)
+            sys.exit(1)
+        
+        # plotting corpus summary statistics
         axes[0].bar(*zip(*train_lang_summary.items()))
-        axes[0].set_title(f"number of texts per register in {train_lang} training data")
+        axes[0].set_title(f"number of texts per register in {train_lang} corpus")
         axes[0].set_xlabel("register")
         axes[0].set_ylabel("number of texts")
 
+        # plotting cfms
         for ax, cfm_path in zip(axes[1:], cfm_paths):
             eval_lang = cfm_path.stem
             with open(cfm_path, "r") as file:
@@ -60,6 +70,7 @@ def confusion_matrices(base_dir : Path = Path("output")):
             ax.set_xlabel("predicted")
             ax.set_ylabel("expected/actual (true labels)")
         
+        # deleting unused axes
         for i in range(len(cfm_paths) + 1, num_rows * num_cols):
             fig.delaxes(axes[i])
         
@@ -74,16 +85,20 @@ def plot_tve_matrix(ax : matplotlib.axes.Axes,
                 metric : str,
                 train_langs : list[str], # = ["en", "fr", "fi", "id", "sv", "tr"],
                 eval_langs : list[str], # = ["en", "fr", "fi", "id", "sv", "tr", "al"],
-                ) -> None:    
-    df = pd.DataFrame(index=eval_langs, columns=train_langs).astype(float)
+                base_dir : Path = Path("output")
+                ) -> None:
+    # constructing train vs. eval dataframe for specified model and metric   
+    tve_df = pd.DataFrame(index=eval_langs, columns=train_langs).astype(float)
     for train_lang in train_langs:
-        with open(f"output/{model}-{train_lang}/eval.json", "r") as file:
+        metrics_path = base_dir / f"{model}-{train_lang}" / "eval.json"
+        # don't test if metrics_path exists since get_all_train_eval_langs finds train langs through searching folders
+        with open(metrics_path, "r") as file:
             metric_summary = json.load(file)
         
         for eval_lang, metrics in metric_summary.items():
-            df.at[eval_lang, train_lang] = metrics[f"{metric}"]
+            tve_df.at[eval_lang, train_lang] = metrics[f"{metric}"]
 
-    sn.heatmap(df, vmin=0.0, vmax=1.0, cmap="Purples", annot=True, cbar=False, ax=ax)
+    sn.heatmap(tve_df, vmin=0.0, vmax=1.0, cmap="Purples", annot=True, cbar=False, ax=ax)
     ax.set_title(f"{model} {metric}")
     ax.set_xlabel("train lang")
     ax.set_ylabel("eval lang")
@@ -108,6 +123,7 @@ def get_all_train_eval_langs(model : str,
                 metrics = json.load(file)
                 eval_langs.update(list(metrics.keys()))
 
+    # order langs so that diagonal forms of same train and eval lang
     only_eval_langs = list(eval_langs - set(train_langs))
     train_langs = sorted(train_langs)
     eval_langs = train_langs + sorted(only_eval_langs)
@@ -136,10 +152,9 @@ def tve_matrices(models : list[str] = ["mbert", "xlmr", "glot500"],
 
 
 def main():
-    # confusion_matrices()
-    # print()
-    # tve_matrices()
+    confusion_matrices()
     print()
+    tve_matrices()
 
 if __name__ == "__main__":
     main()

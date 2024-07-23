@@ -18,7 +18,7 @@ if reg_abbv_path.exists():
     with open(reg_abbv_path) as reg_abbv_file:
         REG_ABBV2NAME = json.load(reg_abbv_file)
 else:
-    print(f"register abbreviation json file not found at {reg_abbv_path}, check if path is correct or register-corpus path {CORPUS_PATH} is correct")
+    print(f"register abbreviation json file not found at {reg_abbv_path}, check if path is correct or register-corpus path {CORPUS_PATH} is correct", file=sys.stderr)
     sys.exit(1)
 
 REGISTERS = list(REG_ABBV2NAME.keys())
