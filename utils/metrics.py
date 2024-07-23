@@ -62,4 +62,4 @@ def save_cfm(preds : torch.Tensor,
     df_cm = pd.DataFrame(cf_matrix, index=row_labels, columns=REGISTERS)
 
     with open(output_filepath, "w") as file:
-        json.dump(df_cm.to_dict(), file, indent=4)
+        json.dump(df_cm.T.to_dict(), file, indent=4)
