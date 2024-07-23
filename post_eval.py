@@ -1,4 +1,5 @@
-import os
+import sys
+from pathlib import Path
 import json
 import math
 
@@ -8,35 +9,38 @@ import matplotlib.pyplot as plt
 import seaborn as sn 
 
 
-def confusion_matrices(base_dir : str = "output"):
-    for folder in os.listdir(base_dir):
-        if not os.path.isdir(os.path.join(base_dir, folder)):
+def confusion_matrices(base_dir : Path = Path("output")):
+    for model_folder in base_dir.iterdir():
+        if not model_folder.is_dir():
             continue
 
-        cfm_folder = os.path.join(base_dir, folder, "cfm")
-        model, train_lang = folder.split("-")
+        cfm_folder = model_folder / "cfm"
+        parts = model_folder.name.split("-")
+        if len(parts) != 2:
+            print(f"subfolder {model_folder.name} of base directory {base_dir} is not of the generated type MODEL-TRAIN_LANG", file=sys.stderr)
+            continue
+        model, train_lang = parts
 
-        files = []
-        for file in os.listdir(cfm_folder):
-            if os.path.isfile(os.path.join(cfm_folder, file)) and os.path.splitext(file)[1] == ".json":
-                files.append(file)
+        cfm_paths = []
+        for path in cfm_folder.iterdir():
+            if path.is_file() and path.suffix == ".json":
+                cfm_paths.append(path)
 
-        same_lang_file = f"{train_lang}.json"
-        if same_lang_file in files:
-            files.remove(same_lang_file)
-            files.insert(0, same_lang_file)
+        same_lang_path = cfm_folder / f"{train_lang}.json"
+        if same_lang_path in cfm_paths:
+            cfm_paths.remove(same_lang_path)
+            cfm_paths.insert(0, same_lang_path) # move to the front
 
-        num_cols = math.ceil(math.sqrt(len(files)))
-        num_rows = math.ceil(len(files) / num_cols)
+        num_cols = math.ceil(math.sqrt(len(cfm_paths)))
+        num_rows = math.ceil(len(cfm_paths) / num_cols)
 
         fig, axes = plt.subplots(num_rows, num_cols, figsize=(7 * num_cols, 5 * num_rows))
         fig.suptitle(f"confusion matrices for {model} trained on {train_lang}", fontsize=20)
         axes = axes.flatten()
 
-        for ax, filepath in zip(axes, files):
-            eval_lang, _ = os.path.splitext(filepath)
-            filepath = os.path.join(cfm_folder, filepath)
-            with open(filepath, "r") as file:
+        for ax, cfm_path in zip(axes, cfm_paths):
+            eval_lang = cfm_path.stem
+            with open(cfm_path, "r") as file:
                 cfm_dict = json.load(file)
                 cfm_df = pd.DataFrame.from_dict(cfm_dict)
             
@@ -45,11 +49,11 @@ def confusion_matrices(base_dir : str = "output"):
             ax.set_xlabel("predicted")
             ax.set_ylabel("expected/actual (true labels)")
         
-        for i in range(len(files), num_rows * num_cols):
+        for i in range(len(cfm_paths), num_rows * num_cols):
             fig.delaxes(axes[i])
         
         fig.tight_layout()
-        fig.savefig(os.path.join(base_dir, folder, "cfm.png"), bbox_inches="tight")
+        fig.savefig(model_folder / "cfm.png", bbox_inches="tight")
         print(f"confusion matrices for {model} trained on {train_lang} saved")
 
 
@@ -75,21 +79,20 @@ def plot_tve_matrix(ax : matplotlib.axes.Axes,
 
 
 def get_all_train_eval_langs(model : str, 
-              base_dir : str = "output"
+              base_dir : Path = Path("output")
               ) -> tuple[list[str], list[str]]:
     train_langs = []
     eval_langs = set()
     
-    for folder in os.listdir(base_dir):
-        if not os.path.isdir(os.path.join(base_dir, folder)):
+    for model_folder in base_dir.iterdir():
+        if not model_folder.is_dir():
             continue
         
-        parts = folder.split("-")
+        parts = model_folder.name.split("-")
         if len(parts) == 2 and parts[0] == model:
-            lang = parts[1]
-            train_langs.append(lang)
+            train_langs.append(parts[1])
             
-            json_path = os.path.join(base_dir, folder, "eval.json")
+            json_path = model_folder / "eval.json"
             with open(json_path, "r") as file:
                 metrics = json.load(file)
                 eval_langs.update(list(metrics.keys()))
@@ -122,7 +125,7 @@ def tve_matrices(models : list[str] = ["mbert", "xlmr", "glot500"],
 
 
 def main():
-    confusion_matrices()
+    # confusion_matrices()
     print()
     tve_matrices()
 
