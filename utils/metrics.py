@@ -1,10 +1,7 @@
 import os
-import glob
 import json
 import numpy as np
 import pandas as pd
-import seaborn as sn
-import matplotlib.pyplot as plt
 
 import torch
 import torchmetrics
@@ -53,16 +50,16 @@ class Metrics:
 
 
 # modified from https://christianbernecker.medium.com/how-to-create-a-confusion-matrix-in-pytorch-38d06a7f04b7
-def save_cf_matrix(preds : torch.Tensor, 
+def save_cfm(preds : torch.Tensor, 
                    labels : torch.Tensor, 
                    output_filepath : str
                    ) -> None:
     cf_matrix = confusion_matrix(labels, preds, labels=range(len(REGISTERS)))
-    cf_matrix = np.divide(cf_matrix, np.sum(cf_matrix, axis=1)[:, None], where=cf_matrix!=0)
-    df_cm = pd.DataFrame(cf_matrix, index=REGISTERS, columns=REGISTERS)
+    register_totals = np.sum(cf_matrix, axis=1)
+    cf_matrix = np.divide(cf_matrix, register_totals[:, None], where=cf_matrix!=0)
 
-    plt.figure(figsize = (12,7))
-    sn.heatmap(df_cm, vmin=0.0, vmax=1.0, cmap="Purples", annot=True)
-    plt.xlabel('predicted')
-    plt.ylabel('expected (true labels)')
-    plt.savefig(output_filepath, bbox_inches="tight")
+    row_labels = [f"{reg}\n(total:{total})" for reg, total in zip(REGISTERS, register_totals)]
+    df_cm = pd.DataFrame(cf_matrix, index=row_labels, columns=REGISTERS)
+
+    with open(output_filepath, "w") as file:
+        json.dump(df_cm.to_dict(), file, indent=4)

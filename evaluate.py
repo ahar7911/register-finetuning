@@ -8,7 +8,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from utils.corpus_load import load_data, REGISTERS
-from utils.metrics import Metrics, save_cf_matrix
+from utils.metrics import Metrics, save_cfm
 
 def evaluate(model : transformers.PreTrainedModel, 
              test_dataloader : DataLoader, 
@@ -41,8 +41,7 @@ def evaluate(model : transformers.PreTrainedModel,
     metrics.write_summary(output_filepath + "eval.json", eval_lang)
     metrics.reset()
 
-    save_cf_matrix(torch.cat(all_preds), torch.cat(all_labels), output_filepath + f"cfm/{eval_lang}.png")
-
+    save_cfm(torch.cat(all_preds), torch.cat(all_labels), output_filepath + f"cfm/{eval_lang}.json")
     print("metrics and cf matrix saved")
 
 
