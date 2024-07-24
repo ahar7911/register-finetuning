@@ -7,8 +7,7 @@
 #SBATCH --time 01:59:00
 #SBATCH --output=output/eval.txt
 
-module load python/python-3.11.4
-source /home2020/home/lilpa/harbison/experiences/env/bin/activate
+source load_env.sh
 
 models=("mbert" "xlmr" "glot500")
 train_langs=("en" "fi" "fr" "sv" "id" "tr")
