@@ -75,12 +75,11 @@ def main(model_name : str, train_langs : str, eval_lang : str) -> None:
     eval_lang_tsv = Path(f"test/{eval_lang}.tsv")
     test_dataset = load_data(eval_lang_tsv, checkpoint)
     test_dataloader = DataLoader(test_dataset, batch_size=64)
-
+    
     metrics = Metrics(num_labels, device)
-    out_path = Path(f"output/{model_name}-{train_langs}/eval.json")
 
+    out_path = Path(f"output/{model_name}-{train_langs}/eval.json")
     out_path.parent.mkdir(parents=True, exist_ok=True) # makes output dir
-    out_path.unlink(missing_ok=True) # removes eval.json if it already exists
     
     evaluate(classifier, test_dataloader, device, metrics, out_path, metric_key=eval_lang, eval_lang=eval_lang)
     

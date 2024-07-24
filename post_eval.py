@@ -65,8 +65,8 @@ def confusion_matrices():
             with open(cfm_path, "r") as file:
                 cfm_dict = json.load(file)
                 cfm_df = pd.DataFrame.from_dict(cfm_dict)
-            
-            sn.heatmap(cfm_df.T, vmin=0.0, vmax=1.0, cmap="Purples", annot=True, ax=ax)
+                            
+            sn.heatmap(cfm_df, vmin=0.0, vmax=1.0, cmap="Purples", annot=True, ax=ax)
             ax.set_title(eval_lang)
             ax.set_xlabel("predicted")
             ax.set_ylabel("expected/actual (true labels)")
@@ -133,7 +133,7 @@ def tve_matrices(models : list[str] = ["mbert", "xlmr", "glot500"],
                  ) -> None:
     fig, axes = plt.subplots(nrows=len(metrics), 
                              ncols=len(models),
-                             figsize=(5 * len(models), 4 * len(metrics)))
+                             figsize=(10 * len(models), 4 * len(metrics)))
     fig.suptitle("train vs. eval lang", fontsize=20)
 
     for model_ind, model in enumerate(models):
@@ -148,8 +148,8 @@ def tve_matrices(models : list[str] = ["mbert", "xlmr", "glot500"],
 
 
 def main():
-    confusion_matrices()
-    print()
+    # confusion_matrices()
+    # print()
     tve_matrices()
 
 if __name__ == "__main__":
