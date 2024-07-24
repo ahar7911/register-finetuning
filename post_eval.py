@@ -148,8 +148,8 @@ def tve_matrices(models : list[str] = ["mbert", "xlmr", "glot500"],
 
 
 def main():
-    # confusion_matrices()
-    # print()
+    confusion_matrices()
+    print()
     tve_matrices()
 
 if __name__ == "__main__":
