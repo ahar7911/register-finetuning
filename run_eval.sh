@@ -10,9 +10,9 @@
 module load python/python-3.11.4
 source /home2020/home/lilpa/harbison/experiences/env/bin/activate
 
-models=("glot500")
-train_langs=("tr")
-eval_langs=("en" "fi" "fr" "sv" "id" "tr" "al")
+models=("mbert" "xlmr" "glot500")
+train_langs=("en" "fi" "fr" "sv" "id" "tr")
+eval_langs=("ar" "ca" "es" "fa" "hi" "jp" "no" "pt" "ur" "zh")
 
 for model in "${models[@]}"; do
     for train_lang in "${train_langs[@]}"; do
