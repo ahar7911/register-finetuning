@@ -19,5 +19,5 @@ lang=$2
 
 echo
 echo "finetuning $model on $lang"
-srun python finetune.py --model $model --train_langs $lang --batch_size $batch_size
+srun python finetune.py --model $model --train_langs $lang --balanced --batch_size $batch_size
 echo "finetuning $model on $lang complete"

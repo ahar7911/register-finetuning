@@ -14,7 +14,7 @@ from torch.utils.data.distributed import DistributedSampler
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.distributed import init_process_group, destroy_process_group
 
-from utils.corpus_load import load_data, REGISTERS
+from utils.corpus_load import load_data, CORPUS_PATH, REGISTERS
 from utils.metrics import Metrics
 from evaluate import evaluate
 
@@ -38,7 +38,8 @@ def train(model : DDP,
           optimizer : torch.optim.Optimizer, 
           lr_scheduler : torch.optim.lr_scheduler.LambdaLR, 
           metrics : Metrics, 
-          out_path : Path
+          out_path : Path,
+          loss_fn : torch.nn.CrossEntropy = None
           ) -> None:
 
     train_start_time = time.time()
@@ -56,7 +57,10 @@ def train(model : DDP,
             preds = torch.argmax(outputs.logits, dim=-1)
             metrics.add_batch(preds, batch["labels"])
 
-            loss = outputs.loss
+            if loss_fn is None:
+                loss = outputs.loss
+            else:
+                loss = loss_fn(outputs.logits, batch["labels"])
             loss.backward()
 
             optimizer.step()
@@ -76,10 +80,29 @@ def train(model : DDP,
     print(f"gpu{rank}: end training | total time: {int(total_time // 60)}m{total_time % 60:.2f}s")
 
 
+def get_weights(train_lang):
+    summary_path = CORPUS_PATH / f"summaries/{train_lang.json}"
+    if summary_path.exists():
+        with open(summary_path) as summary_file:
+            summary_dict = json.load(summary_file)["counts"]
+    else:
+        print(f"given train lang {train_lang}, but could not find corresponding summary file at {summary_path}.", file=sys.stderr)
+        print("please double check that CORPUS_PATH in utils/corpus_load.py correctly directs to register-corpus location and/or that register-corpus/analyze_dist.py has been run", file=sys.stderr)
+        sys.exit(1)
+
+    total = sum(summary_dict.values())
+    weights = []
+    for count in summary_dict.values():
+        weights.append(total / count)
+    
+    return torch.tensor(weights)
+
+
 def main(rank : int, 
          world_size: int, 
          model_name : str, 
          train_langs : str, 
+         balanced : bool,
          num_epochs : int,
          batch_size : int,
          ) -> None:
@@ -115,12 +138,17 @@ def main(rank : int,
         num_training_steps=len(train_dataloader) * num_epochs
     )
     metrics = Metrics(num_labels, rank)
-    out_path = Path(f"output/{model_name}-{train_langs}/train.json")
 
+    loss_fn = None
+    if balanced:
+        weights = get_weights(train_langs)
+        loss_fn = torch.nn.CrossEntropyLoss(weight=weights)
+
+    out_path = Path(f"output/{model_name}-{train_langs}/train.json")
     out_path.parent.mkdir(parents=True, exist_ok=True) # makes output dir
     out_path.unlink(missing_ok=True) # removes train.json if it already exists
 
-    train(model, train_dataloader, val_dataloader, rank, num_epochs, optimizer, lr_scheduler, metrics, out_path)
+    train(model, train_dataloader, val_dataloader, rank, num_epochs, optimizer, lr_scheduler, metrics, out_path, loss_fn)
     model.module.save_pretrained(Path(f"./models/{model_name}-{train_langs}/"), from_pt=True) # creates necessary subfolders if required
 
     destroy_process_group()
@@ -133,6 +161,8 @@ if __name__ == "__main__":
                         help="LLM to finetune")
     parser.add_argument("--train_langs", required=True,
                         help="Language(s) to finetune register classification on")
+    parser.add_argument("--balanced", action="store_true",
+                        help="Whether model will train such that each class is weighted equally or not")
     parser.add_argument("--num_epochs", default=5, type=int,
                         help="Number of epochs to finetune model for (default: 5)")
     parser.add_argument("--batch_size", default=16, type=int,
@@ -142,4 +172,4 @@ if __name__ == "__main__":
     world_size = torch.cuda.device_count()
     print(f"world size (# of gpus): {world_size}")
 
-    mp.spawn(main, args=(world_size, args.model, args.train_langs, args.num_epochs, args.batch_size), nprocs=world_size)
+    mp.spawn(main, args=(world_size, args.model, args.train_langs, args.balanced, args.num_epochs, args.batch_size), nprocs=world_size)
