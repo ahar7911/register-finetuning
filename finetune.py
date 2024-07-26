@@ -93,7 +93,10 @@ def get_weights(train_lang):
     total = sum(summary_dict.values())
     weights = []
     for count in summary_dict.values():
-        weights.append(total / count)
+        if count == 0:
+            weights.append(0)
+        else:
+            weights.append(total / count)
     
     return torch.tensor(weights)
 
