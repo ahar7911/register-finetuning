@@ -47,6 +47,13 @@ class Metrics:
         summary = self.get_summary()
         past_summaries[key] = summary
 
+        # organize keys (either languages or training epochs) by alphabetical order if not already
+        summary_keys = list(past_summaries.keys())
+        sorted_keys = sorted(summary_keys)
+        if summary_keys != sorted_keys:
+            sorted_summary = {sorted_summary[key] : past_summaries[key] for key in sorted_keys}
+            past_summaries = sorted_summary
+
         with open(path, "w") as file:
             json.dump(past_summaries, file, indent=4)
 
