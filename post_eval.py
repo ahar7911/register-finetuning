@@ -65,6 +65,11 @@ def confusion_matrices():
             with open(cfm_path, "r") as file:
                 cfm_dict = json.load(file)
                 cfm_df = pd.DataFrame.from_dict(cfm_dict)
+            
+            # if len(list(cfm_dict.keys())[0].split("\n")) != 1:
+            #     new_cfm_dict = cfm_df.T.to_dict()
+            #     with open(cfm_path, "w") as file:
+            #         json.dump(new_cfm_dict, file, indent=4)
                             
             sn.heatmap(cfm_df, vmin=0.0, vmax=1.0, cmap="Purples", annot=True, ax=ax)
             ax.set_title(eval_lang)
