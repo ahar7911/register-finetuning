@@ -81,7 +81,7 @@ def train(model : DDP,
 
 
 def get_weights(train_lang):
-    summary_path = CORPUS_PATH / f"summaries/{train_lang.json}"
+    summary_path = CORPUS_PATH / f"summaries/{train_lang}.json"
     if summary_path.exists():
         with open(summary_path) as summary_file:
             summary_dict = json.load(summary_file)["counts"]
