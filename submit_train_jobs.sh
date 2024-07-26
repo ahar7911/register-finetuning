@@ -3,6 +3,8 @@
 models=("mbert")
 langs=("fr")
 
+mkdir -p output
+
 for model in "${models[@]}"; do
     for lang in "${langs[@]}"; do
         output_dir="output/$model-$lang"

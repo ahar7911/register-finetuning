@@ -13,6 +13,8 @@ models=("mbert" "xlmr" "glot500")
 train_langs=("en" "fi" "fr" "sv" "id" "tr")
 eval_langs=("ar" "ca" "es" "fa" "hi" "jp" "no" "pt" "ur" "zh")
 
+mkdir -p output
+
 for model in "${models[@]}"; do
     for train_lang in "${train_langs[@]}"; do
         echo "evaluating $model trained on $train_lang"
