@@ -145,11 +145,12 @@ def main(rank : int,
     loss_fn = None
     if balanced:
         weights = get_weights(train_langs)
-        loss_fn = torch.nn.CrossEntropyLoss(weight=weights).to(rank)
+        loss_fn = torch.nn.CrossEntropyLoss(weight=weights)
+        loss_fn.to(rank)
 
     out_path = Path(f"output/{model_name}-{train_langs}/train.json")
-    out_path.parent.mkdir(parents=True, exist_ok=True) # makes output dir
     out_path.unlink(missing_ok=True) # removes train.json if it already exists
+    (out_path.parent / "eval.json").unlink(missing_ok=True) # removes eval.json if it already exists
 
     train(model, train_dataloader, val_dataloader, rank, num_epochs, optimizer, lr_scheduler, metrics, out_path, loss_fn)
     model.module.save_pretrained(Path(f"./models/{model_name}-{train_langs}/"), from_pt=True) # creates necessary subfolders if required
