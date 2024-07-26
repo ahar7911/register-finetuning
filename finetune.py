@@ -145,7 +145,7 @@ def main(rank : int,
     loss_fn = None
     if balanced:
         weights = get_weights(train_langs)
-        loss_fn = torch.nn.CrossEntropyLoss(weight=weights)
+        loss_fn = torch.nn.CrossEntropyLoss(weight=weights).to(rank)
 
     out_path = Path(f"output/{model_name}-{train_langs}/train.json")
     out_path.parent.mkdir(parents=True, exist_ok=True) # makes output dir
