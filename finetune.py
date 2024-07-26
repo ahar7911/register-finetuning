@@ -39,7 +39,7 @@ def train(model : DDP,
           lr_scheduler : torch.optim.lr_scheduler.LambdaLR, 
           metrics : Metrics, 
           out_path : Path,
-          loss_fn : torch.nn.CrossEntropy = None
+          loss_fn : torch.nn.CrossEntropyLoss = None
           ) -> None:
 
     train_start_time = time.time()
