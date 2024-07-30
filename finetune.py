@@ -57,7 +57,7 @@ def train(model : DDP,
             batch = {k: v.to(rank) for k, v in batch.items()}
             optimizer.zero_grad()
 
-            with torch.autocast():
+            with torch.autocast(device_type="cuda"):
                 outputs = model(**batch)
                 if loss_fn is None:
                     loss = outputs.loss
