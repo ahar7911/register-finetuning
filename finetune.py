@@ -111,7 +111,7 @@ def main(rank : int,
          ) -> None:
     ddp_setup(rank, world_size)
 
-    torch.cuda.memory._record_memory_history()
+    # torch.cuda.memory._record_memory_history()
 
     with open(Path("utils/model2chckpt.json")) as file:
         model2chckpt = json.load(file)
@@ -152,10 +152,10 @@ def main(rank : int,
     out_path.unlink(missing_ok=True) # removes train.json if it already exists
     (out_path.parent / "eval.json").unlink(missing_ok=True) # removes eval.json if it already exists
 
-    try:
-        train(model, train_dataloader, val_dataloader, rank, num_epochs, optimizer, lr_scheduler, metrics, out_path, loss_fn)
-    except:
-        torch.cuda.memory._dump_snapshot(out_path.parent / "memory.pickle")
+    # try:
+    train(model, train_dataloader, val_dataloader, rank, num_epochs, optimizer, lr_scheduler, metrics, out_path, loss_fn)
+    # except:
+    #     torch.cuda.memory._dump_snapshot(out_path.parent / "memory.pickle")
     model.module.save_pretrained(Path(f"./models/{model_name}-{train_langs}/"), from_pt=True) # creates necessary subfolders if required
 
     destroy_process_group()
