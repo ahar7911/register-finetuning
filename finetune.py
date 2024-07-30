@@ -7,6 +7,7 @@ import json
 
 import torch
 from torch.utils.data import DataLoader, random_split
+from torch.amp import GradScaler
 from transformers import AutoModelForSequenceClassification, get_scheduler
 
 import torch.multiprocessing as mp
@@ -45,6 +46,8 @@ def train(model : DDP,
     train_start_time = time.time()
     print(f"gpu{rank}: start training")
 
+    scaler = GradScaler()
+
     for epoch in range(num_epochs):
         model.train()
         epoch_start_time = time.time()
@@ -52,21 +55,23 @@ def train(model : DDP,
 
         for batch in train_dataloader:       
             batch = {k: v.to(rank) for k, v in batch.items()}
+            optimizer.zero_grad()
 
-            outputs = model(**batch)
+            with torch.autocast():
+                outputs = model(**batch)
+                if loss_fn is None:
+                    loss = outputs.loss
+                else:
+                    loss = loss_fn(outputs.logits, batch["labels"])
+            
             preds = torch.argmax(outputs.logits, dim=-1)
             metrics.add_batch(preds, batch["labels"])
 
-            if loss_fn is None:
-                loss = outputs.loss
-            else:
-                loss = loss_fn(outputs.logits, batch["labels"])
-            loss.backward()
-
-            optimizer.step()
-            lr_scheduler.step()
-
-            optimizer.zero_grad()
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
+        
+        lr_scheduler.step() # once per epoch
         
         epoch_str = f"epoch {epoch + 1}"
         epoch_time = time.time() - epoch_start_time
@@ -111,8 +116,6 @@ def main(rank : int,
          ) -> None:
     ddp_setup(rank, world_size)
 
-    # torch.cuda.memory._record_memory_history()
-
     with open(Path("utils/model2chckpt.json")) as file:
         model2chckpt = json.load(file)
 
@@ -152,10 +155,7 @@ def main(rank : int,
     out_path.unlink(missing_ok=True) # removes train.json if it already exists
     (out_path.parent / "eval.json").unlink(missing_ok=True) # removes eval.json if it already exists
 
-    # try:
     train(model, train_dataloader, val_dataloader, rank, num_epochs, optimizer, lr_scheduler, metrics, out_path, loss_fn)
-    # except:
-    #     torch.cuda.memory._dump_snapshot(out_path.parent / "memory.pickle")
     model.module.save_pretrained(Path(f"./models/{model_name}-{train_langs}/"), from_pt=True) # creates necessary subfolders if required
 
     destroy_process_group()
