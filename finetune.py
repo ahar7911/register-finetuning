@@ -126,11 +126,9 @@ def main(rank : int,
     train_dataset, val_dataset = random_split(dataset, [0.8, 0.2])
     train_dataloader = DataLoader(train_dataset, 
                                   batch_size=batch_size,
-                                  pin_memory=True,
                                   sampler=DistributedSampler(train_dataset))
     val_dataloader = DataLoader(val_dataset,
-                                batch_size=batch_size, 
-                                pin_memory=True, 
+                                batch_size=batch_size,  
                                 sampler=DistributedSampler(val_dataset))
     
     optimizer = torch.optim.AdamW(model.parameters(), lr=5e-5)
