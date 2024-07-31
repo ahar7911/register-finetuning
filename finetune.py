@@ -50,7 +50,9 @@ def train(model : DDP,
 
     for epoch in range(num_epochs):
         model.train()
+        print("model.train()")
         epoch_start_time = time.time()
+        print("time.time()")
         metrics.reset()
         print("start epoch")
         for batch in train_dataloader:       
