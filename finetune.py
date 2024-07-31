@@ -15,7 +15,7 @@ from torch.utils.data.distributed import DistributedSampler
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.distributed import init_process_group, destroy_process_group
 
-from utils.corpus_load import load_data, CORPUS_PATH, REGISTERS
+from utils.corpus_load import load_data, REGISTERS
 from utils.metrics import Metrics
 from evaluate import evaluate
 
@@ -85,27 +85,6 @@ def train(model : DDP,
     print(f"gpu{rank}: end training | total time: {int(total_time // 60)}m{total_time % 60:.2f}s")
 
 
-def get_weights(train_lang):
-    summary_path = CORPUS_PATH / f"summaries/{train_lang}.json"
-    if summary_path.exists():
-        with open(summary_path) as summary_file:
-            summary_dict = json.load(summary_file)["counts"]
-    else:
-        print(f"given train lang {train_lang}, but could not find corresponding summary file at {summary_path}.", file=sys.stderr)
-        print("please double check that CORPUS_PATH in utils/corpus_load.py correctly directs to register-corpus location and/or that register-corpus/analyze_dist.py has been run", file=sys.stderr)
-        sys.exit(1)
-
-    total = sum(summary_dict.values())
-    weights = []
-    for count in summary_dict.values():
-        if count == 0:
-            weights.append(0)
-        else:
-            weights.append(total / count)
-    
-    return torch.tensor(weights)
-
-
 def main(rank : int, 
          world_size: int, 
          model_name : str, 
@@ -127,7 +106,7 @@ def main(rank : int,
     model = DDP(model, device_ids=[rank])
 
     train_lang_tsvs = [Path(f"train/{train_lang}.tsv") for train_lang in train_langs]
-    dataset = load_data(train_lang_tsvs, checkpoint)
+    dataset, weights = load_data(train_lang_tsvs, checkpoint)
     train_dataset, val_dataset = random_split(dataset, [0.8, 0.2])
     train_dataloader = DataLoader(train_dataset, 
                                   batch_size=batch_size,
@@ -147,16 +126,16 @@ def main(rank : int,
 
     loss_fn = None
     if balanced:
-        weights = get_weights(train_langs)
         loss_fn = torch.nn.CrossEntropyLoss(weight=weights)
         loss_fn.to(rank)
 
-    out_path = Path(f"output/{model_name}-{train_langs}/train.json")
+    model_str = f"{model_name}-{"-".join(train_langs)}"
+    out_path = Path(f"output/{model_str}/train.json")
     out_path.unlink(missing_ok=True) # removes train.json if it already exists
     (out_path.parent / "eval.json").unlink(missing_ok=True) # removes eval.json if it already exists
 
     train(model, train_dataloader, val_dataloader, rank, num_epochs, optimizer, lr_scheduler, metrics, out_path, loss_fn)
-    model.module.save_pretrained(Path(f"./models/{model_name}-{train_langs}/"), from_pt=True) # creates necessary subfolders if required
+    model.module.save_pretrained(Path(f"./models/{model_str}/"), from_pt=True) # creates necessary subfolders if required
 
     destroy_process_group()
 
