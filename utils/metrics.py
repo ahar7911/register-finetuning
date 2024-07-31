@@ -74,4 +74,4 @@ def save_cfm(preds : torch.Tensor,
         out_path.parent.mkdir(parents=True)
 
     with open(out_path, "w") as file: # overwrites existing cfm matrix, if exists
-        json.dump(df_cm.T.to_dict(), file, indent=4)
+        json.dump(df_cm.to_dict(), file, indent=4)
