@@ -67,7 +67,8 @@ def confusion_matrices():
                 cfm_df = pd.DataFrame.from_dict(cfm_dict)
             
             # if len(list(cfm_dict.keys())[0].split("\n")) != 1:
-            #     new_cfm_dict = cfm_df.T.to_dict()
+            #     cfm_df = cfm_df.T
+            #     new_cfm_dict = cfm_df.to_dict()
             #     with open(cfm_path, "w") as file:
             #         json.dump(new_cfm_dict, file, indent=4)
                             
