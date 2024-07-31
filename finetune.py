@@ -109,7 +109,7 @@ def get_weights(train_lang):
 def main(rank : int, 
          world_size: int, 
          model_name : str, 
-         train_langs : str, 
+         train_langs : list[str], 
          balanced : bool,
          num_epochs : int,
          batch_size : int,
@@ -126,8 +126,8 @@ def main(rank : int,
     model.to(rank)
     model = DDP(model, device_ids=[rank])
 
-    train_lang_tsv = Path(f"train/{train_langs}.tsv")
-    dataset = load_data(train_lang_tsv, checkpoint)
+    train_lang_tsvs = [Path(f"train/{train_lang}.tsv") for train_lang in train_langs]
+    dataset = load_data(train_lang_tsvs, checkpoint)
     train_dataset, val_dataset = random_split(dataset, [0.8, 0.2])
     train_dataloader = DataLoader(train_dataset, 
                                   batch_size=batch_size,
@@ -166,7 +166,7 @@ if __name__ == "__main__":
                             description="Fine-tuning LLMs for multilingual classification of registers")
     parser.add_argument("--model", choices=["mbert", "xlmr", "glot500"], required=True,
                         help="LLM to finetune")
-    parser.add_argument("--train_langs", required=True,
+    parser.add_argument("--train_langs", nargs="+", required=True,
                         help="Language(s) to finetune register classification on")
     parser.add_argument("--balanced", action="store_true",
                         help="Whether model will train such that each class is weighted equally or not")

@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+from random import sample
 import json
 import pandas as pd
 
@@ -36,21 +37,33 @@ class RegisterDataset(Dataset):
         encoded_text = {k : v[index] for k, v in self.encoded_texts.items()}
         register = self.registers[index]
         return {**encoded_text, 'labels': torch.tensor(register)}
-
-
-def load_data(path : Path, model_checkpoint : str) -> Dataset:
-    path = CORPUS_PATH / "corpus" / path
     
+
+def get_texts_regs(path : Path) -> tuple[list[str], list[str]]:
+    path = CORPUS_PATH / "corpus" / path
     if path.exists():
         dataset = pd.read_csv(path, sep='\t')
     else:
         print("corpus file not found, incorrect language specification or bad corpus filepath (see CORPUS_PATH in utils/corpus_load.py)", file=sys.stderr)
         sys.exit(1)
-    tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
-    
+
     texts = dataset.iloc[:,1].tolist()
-    encoded_texts = dict(tokenizer(texts, return_tensors='pt', padding='max_length', truncation=True))
     registers = dataset.iloc[:,0].tolist()
+    return texts, registers
+
+
+def load_data(paths : list[Path], model_checkpoint : str) -> Dataset:
+    all_texts_regs = [get_texts_regs(path) for path in paths]
+    min_len = min([len(texts) for texts, _ in all_texts_regs])
+
+    texts = []
+    registers = []
+    for lang_texts, lang_regs in all_texts_regs:
+        texts += sample(lang_texts, min_len)
+        registers += sample(lang_regs, min_len)
+    
+    tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
+    encoded_texts = dict(tokenizer(texts, return_tensors='pt', padding='max_length', truncation=True))
     registers = [REG2ID[reg] for reg in registers]
     
     return RegisterDataset(encoded_texts, registers)
