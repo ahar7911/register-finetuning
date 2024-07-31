@@ -51,7 +51,7 @@ class Metrics:
         summary_keys = list(past_summaries.keys())
         sorted_keys = sorted(summary_keys)
         if summary_keys != sorted_keys:
-            sorted_summary = {sorted_summary[key] : past_summaries[key] for key in sorted_keys}
+            sorted_summary = {key : past_summaries[key] for key in sorted_keys}
             past_summaries = sorted_summary
 
         with open(path, "w") as file:
