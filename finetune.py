@@ -88,7 +88,7 @@ def train(model : DDP,
 def main(rank : int, 
          world_size: int, 
          model_name : str, 
-         train_langs : list[str], 
+         train_langs : str, 
          balanced : bool,
          num_epochs : int,
          batch_size : int,
@@ -100,13 +100,13 @@ def main(rank : int,
 
     checkpoint = model2chckpt[model_name]
     num_labels = len(REGISTERS)
-    model_str = f"{model_name}-{'-'.join(train_langs)}"
+    model_str = f"{model_name}-{train_langs}"
 
     model = AutoModelForSequenceClassification.from_pretrained(checkpoint, num_labels=num_labels)
     model.to(rank)
     model = DDP(model, device_ids=[rank])
 
-    train_lang_tsvs = [Path(f"train/{train_lang}.tsv") for train_lang in train_langs]
+    train_lang_tsvs = [Path(f"train/{train_lang}.tsv") for train_lang in train_langs.split("-")]
     dataset, weights = load_data(train_lang_tsvs, checkpoint)
     train_dataset, val_dataset = random_split(dataset, [0.8, 0.2])
     train_dataloader = DataLoader(train_dataset, 
@@ -145,8 +145,8 @@ if __name__ == "__main__":
                             description="Fine-tuning LLMs for multilingual classification of registers")
     parser.add_argument("--model", choices=["mbert", "xlmr", "glot500"], required=True,
                         help="LLM to finetune")
-    parser.add_argument("--train_langs", nargs="+", required=True,
-                        help="Language(s) to finetune register classification on")
+    parser.add_argument("--train_langs", required=True,
+                        help="Language(s) to finetune register classification on, multiple languages must be separated by '-'")
     parser.add_argument("--balanced", action="store_true",
                         help="Whether model will train such that each class is weighted equally or not")
     parser.add_argument("--num_epochs", default=5, type=int,

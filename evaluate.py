@@ -63,13 +63,13 @@ def main(model_name : str, train_langs : list[str], eval_lang : str) -> None:
     
     checkpoint = model2chckpt[model_name]
     num_labels = len(REGISTERS)
-    model_str = f"{model_name}-{'-'.join(train_langs)}"
+    model_str = f"{model_name}-{train_langs}"
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     try:
         classifier = AutoModelForSequenceClassification.from_pretrained(f"./models/{model_str}")
     except:
-        print(f"model not found, incorrect model name {model_name} or no saved model has been trained on specified language(s) {train_langs}", file=sys.stderr)
+        print(f"model not found, incorrect model name {model_name} or no saved model has been trained on specified language(s) {train_langs}. maybe check the order of your language strings?", file=sys.stderr)
         sys.exit(1)
     classifier.to(device)
 
@@ -90,8 +90,8 @@ if __name__ == "__main__":
                             description="Evaluates multilingual model's ability to classify registers in one language")
     parser.add_argument("--model", choices=["mbert", "xlmr", "glot500"], required=True,
                         help="Name of model to evaluate")
-    parser.add_argument("--train_langs", nargs="+", required=True, 
-                        help="Language(s) model was fine-tuned on")
+    parser.add_argument("--train_langs", required=True, 
+                        help="Language(s) model was fine-tuned on, multiple languages must be separated by '-'")
     parser.add_argument("--eval_lang", required=True,
                         help="Language to evaluate fine-tuned model on")
     args = parser.parse_args()
