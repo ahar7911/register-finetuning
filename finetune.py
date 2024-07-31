@@ -52,7 +52,7 @@ def train(model : DDP,
         model.train()
         epoch_start_time = time.time()
         metrics.reset()
-
+        print("start epoch")
         for batch in train_dataloader:       
             batch = {k: v.to(rank) for k, v in batch.items()}
             optimizer.zero_grad()
@@ -63,13 +63,18 @@ def train(model : DDP,
                     loss = outputs.loss
                 else:
                     loss = loss_fn(outputs.logits, batch["labels"])
+            print("forward pass")
             
             preds = torch.argmax(outputs.logits, dim=-1)
             metrics.add_batch(preds, batch["labels"])
+            print("metrics")
 
             scaler.scale(loss).backward()
+            print("loss")
             scaler.step(optimizer)
+            print("optimizer")
             scaler.update()
+            print("end batch")
         
         lr_scheduler.step() # once per epoch
         
