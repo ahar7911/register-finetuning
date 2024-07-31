@@ -100,6 +100,7 @@ def main(rank : int,
 
     checkpoint = model2chckpt[model_name]
     num_labels = len(REGISTERS)
+    model_str = f"{model_name}-{'-'.join(train_langs)}"
 
     model = AutoModelForSequenceClassification.from_pretrained(checkpoint, num_labels=num_labels)
     model.to(rank)
@@ -129,7 +130,6 @@ def main(rank : int,
         loss_fn = torch.nn.CrossEntropyLoss(weight=weights)
         loss_fn.to(rank)
 
-    model_str = f"{model_name}-{'-'.join(train_langs)}"
     out_path = Path(f"output/{model_str}/train.json")
     out_path.unlink(missing_ok=True) # removes train.json if it already exists
     (out_path.parent / "eval.json").unlink(missing_ok=True) # removes eval.json if it already exists

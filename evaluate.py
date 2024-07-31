@@ -57,16 +57,17 @@ def evaluate(model : transformers.PreTrainedModel,
         print("confusion matrices saved")
 
 
-def main(model_name : str, train_langs : str, eval_lang : str) -> None:
+def main(model_name : str, train_langs : list[str], eval_lang : str) -> None:
     with open(Path("utils/model2chckpt.json")) as file:
         model2chckpt = json.load(file)
     
     checkpoint = model2chckpt[model_name]
     num_labels = len(REGISTERS)
+    model_str = f"{model_name}-{'-'.join(train_langs)}"
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     try:
-        classifier = AutoModelForSequenceClassification.from_pretrained(f"./models/{model_name}-{train_langs}")
+        classifier = AutoModelForSequenceClassification.from_pretrained(f"./models/{model_str}")
     except:
         print(f"model not found, incorrect model name {model_name} or no saved model has been trained on specified language(s) {train_langs}", file=sys.stderr)
         sys.exit(1)
@@ -78,7 +79,7 @@ def main(model_name : str, train_langs : str, eval_lang : str) -> None:
     
     metrics = Metrics(num_labels, device)
 
-    out_path = Path(f"output/{model_name}-{train_langs}/eval.json")
+    out_path = Path(f"output/{model_str}/eval.json")
     out_path.parent.mkdir(parents=True, exist_ok=True) # makes output dir
     
     evaluate(classifier, test_dataloader, device, metrics, out_path, metric_key=eval_lang, eval_lang=eval_lang)
@@ -89,7 +90,7 @@ if __name__ == "__main__":
                             description="Evaluates multilingual model's ability to classify registers in one language")
     parser.add_argument("--model", choices=["mbert", "xlmr", "glot500"], required=True,
                         help="Name of model to evaluate")
-    parser.add_argument("--train_langs", required=True, 
+    parser.add_argument("--train_langs", nargs="+", required=True, 
                         help="Language(s) model was fine-tuned on")
     parser.add_argument("--eval_lang", required=True,
                         help="Language to evaluate fine-tuned model on")
