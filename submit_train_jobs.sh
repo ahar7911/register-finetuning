@@ -1,7 +1,7 @@
 #! /bin/bash
 
 models=("mbert" "xlmr" "glot500")
-langs=("fr" "sv")
+langs=("en" "fi" "fr" "id" "sv" "tr")
 
 for model in "${models[@]}"; do
     for lang in "${langs[@]}"; do
