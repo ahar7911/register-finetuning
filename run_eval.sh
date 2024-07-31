@@ -13,7 +13,7 @@ source load_env.sh
 
 model=$1
 train_lang=$2
-eval_langs=("en" "fi" "fr" "sv" "id" "tr" "ar" "ca" "es" "de" "fa" "hi" "jp" "no" "pt" "ur" "zh")
+eval_langs=("en" "fi" "fr" "sv" "ar" "ca" "es" "fa" "hi" "id" "jp" "no" "pt" "ru" "tr" "ur" "zh" "al" "de")
 
 echo "evaluating $model trained on $train_lang"
 for eval_lang in "${eval_langs[@]}"; do
