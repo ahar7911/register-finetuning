@@ -10,6 +10,7 @@ import seaborn as sn
 
 from utils.corpus_load import CORPUS_PATH
 
+
 def plot_summary(ax : matplotlib.axes.Axes, train_lang : str) -> None:
     # obtaining corpus summary statistics
     summary_path = CORPUS_PATH / f"summaries/{train_lang}.json"
