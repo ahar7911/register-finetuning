@@ -19,9 +19,9 @@ subfolder=$3
 
 echo
 echo "finetuning $model on $lang"
+cmd="srun python finetune.py --model $model --train_langs $lang --batch_size $batch_size --balanced"
 if [ -z "${subfolder}" ]; then
-    srun python finetune.py --model $model --train_langs $lang --batch_size $batch_size
-else
-    srun python finetune.py --model $model --train_langs $lang --subfolder $subfolder --batch_size $batch_size
+    cmd+=" --subfolder $subfolder"
 fi
+$cmd
 echo "finetuning $model on $lang complete"
