@@ -57,13 +57,19 @@ def evaluate(model : transformers.PreTrainedModel,
         print("confusion matrices saved")
 
 
-def main(model_name : str, train_langs : str, eval_lang : str) -> None:
+def main(model_name : str, 
+         train_langs : str, 
+         eval_lang : str, 
+         subfolder : str
+         ) -> None:
     with open(Path("utils/model2chckpt.json")) as file:
         model2chckpt = json.load(file)
     
     checkpoint = model2chckpt[model_name]
     num_labels = len(REGISTERS)
     model_str = f"{model_name}-{train_langs}"
+    if subfolder is not None:
+        model_str = f"{subfolder}/{model_str}"
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     try:
@@ -94,6 +100,8 @@ if __name__ == "__main__":
                         help="Language(s) model was fine-tuned on, multiple languages must be separated by '-'")
     parser.add_argument("--eval_lang", required=True,
                         help="Language to evaluate fine-tuned model on")
+    parser.add_argument("--subfolder",
+                        help="Evaluation outputs will be saved to output/subfolder/ and model will be taken from models/subfolder/")
     args = parser.parse_args()
     
-    main(args.model, args.train_langs, args.eval_lang)
+    main(**vars(args))

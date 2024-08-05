@@ -1,5 +1,4 @@
 from argparse import ArgumentParser
-import sys
 import os
 import time
 from pathlib import Path
@@ -88,7 +87,8 @@ def train(model : DDP,
 def main(rank : int, 
          world_size: int, 
          model_name : str, 
-         train_langs : str, 
+         train_langs : str,
+         subfolder : str, 
          balanced : bool,
          num_epochs : int,
          batch_size : int,
@@ -102,6 +102,8 @@ def main(rank : int,
     checkpoint = model2chckpt[model_name]
     num_labels = len(REGISTERS)
     model_str = f"{model_name}-{train_langs}"
+    if subfolder is not None:
+        model_str = f"{subfolder}/{model_str}"
 
     model = AutoModelForSequenceClassification.from_pretrained(checkpoint, num_labels=num_labels)
     model.to(rank)
@@ -148,6 +150,8 @@ if __name__ == "__main__":
                         help="LLM to finetune")
     parser.add_argument("--train_langs", required=True,
                         help="Language(s) to finetune register classification on, multiple languages must be separated by '-'")
+    parser.add_argument("--subfolder",
+                        help="Training outputs will be saved to output/subfolder/ and model will be saved to models/subfolder/")
     parser.add_argument("--balanced", action="store_true",
                         help="Whether model will train such that each class is weighted equally or not")
     parser.add_argument("--num_epochs", default=5, type=int,
@@ -155,10 +159,11 @@ if __name__ == "__main__":
     parser.add_argument("--batch_size", default=16, type=int,
                         help="Size of each training batch (default: 16)")
     parser.add_argument("--learning_rate", default=1e-5, type=float,
-                        help="Learning rate for AdamW optimizer when training")
+                        help="Learning rate for AdamW optimizer when training (default: 1e-5)")
     args = parser.parse_args()
 
     world_size = torch.cuda.device_count()
     print(f"world size (# of gpus): {world_size}")
 
-    mp.spawn(main, args=(world_size, args.model, args.train_langs, args.balanced, args.num_epochs, args.batch_size, args.learning_rate), nprocs=world_size)
+    main_args = (world_size,) + tuple(vars(args).values())
+    mp.spawn(main, args=main_args, nprocs=world_size)

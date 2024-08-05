@@ -14,9 +14,14 @@ source load_env.sh
 
 model=$1
 lang=$2
+subfolder=$3
 [ "$model" == "glot500" ] && batch_size=8 || batch_size=16
 
 echo
 echo "finetuning $model on $lang"
-srun python finetune.py --model $model --train_langs $lang --batch_size $batch_size
+if [ -z "${subfolder}" ]; then
+    srun python finetune.py --model $model --train_langs $lang --batch_size $batch_size
+else
+    srun python finetune.py --model $model --train_langs $lang --subfolder $subfolder --batch_size $batch_size
+fi
 echo "finetuning $model on $lang complete"
