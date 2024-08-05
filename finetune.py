@@ -92,6 +92,7 @@ def main(rank : int,
          balanced : bool,
          num_epochs : int,
          batch_size : int,
+         lr : float
          ) -> None:
     ddp_setup(rank, world_size)
 
@@ -116,7 +117,7 @@ def main(rank : int,
                                 batch_size=batch_size,  
                                 sampler=DistributedSampler(val_dataset))
     
-    optimizer = torch.optim.AdamW(model.parameters(), lr=5e-5)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=lr)
     lr_scheduler = get_scheduler(
         "linear",
         optimizer=optimizer,
@@ -153,9 +154,11 @@ if __name__ == "__main__":
                         help="Number of epochs to finetune model for (default: 5)")
     parser.add_argument("--batch_size", default=16, type=int,
                         help="Size of each training batch (default: 16)")
+    parser.add_argument("--learning_rate", default=1e-5, type=float,
+                        help="Learning rate for AdamW optimizer when training")
     args = parser.parse_args()
 
     world_size = torch.cuda.device_count()
     print(f"world size (# of gpus): {world_size}")
 
-    mp.spawn(main, args=(world_size, args.model, args.train_langs, args.balanced, args.num_epochs, args.batch_size), nprocs=world_size)
+    mp.spawn(main, args=(world_size, args.model, args.train_langs, args.balanced, args.num_epochs, args.batch_size, args.learning_rate), nprocs=world_size)
