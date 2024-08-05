@@ -5,7 +5,7 @@ import pandas as pd
 
 import torch
 import torchmetrics
-from torchmetrics.classification import MulticlassF1Score#, MulticlassAccuracy, MulticlassPrecision, MulticlassRecall
+from torchmetrics.classification import MulticlassF1Score, MulticlassPrecision, MulticlassRecall#, MulticlassAccuracy
 from sklearn.metrics import confusion_matrix
 
 from utils.corpus_load import REGISTERS
@@ -13,8 +13,8 @@ from utils.corpus_load import REGISTERS
 class Metrics:
     def __init__(self, num_classes : int, device : torch.device):
         self.metrics = {#"accuracy": MulticlassAccuracy(num_classes=num_classes),
-                   #"precision": MulticlassPrecision(num_classes=num_classes),
-                   #"recall": MulticlassRecall(num_classes=num_classes),
+                   "precision": MulticlassPrecision(num_classes=num_classes),
+                   "recall": MulticlassRecall(num_classes=num_classes),
                    "micro_f1": MulticlassF1Score(num_classes=num_classes, average="micro"),
                    "macro_f1": MulticlassF1Score(num_classes=num_classes, average="macro")}
     
