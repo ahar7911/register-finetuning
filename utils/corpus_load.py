@@ -37,13 +37,13 @@ class RegisterDataset(Dataset):
     def __getitem__(self, index : int) -> dict[str, torch.Tensor]:
         encoded_text = {k : v[index] for k, v in self.encoded_texts.items()}
         register = self.registers[index]
-        return {**encoded_text, 'labels': torch.tensor(register)}
+        return {**encoded_text, "labels": torch.tensor(register)}
     
 
 def get_texts_regs(path : Path) -> tuple[list[str], list[str]]:
     path = CORPUS_PATH / "corpus" / path
     if path.exists():
-        dataset = pd.read_csv(path, sep='\t')
+        dataset = pd.read_csv(path, sep="\t")
     else:
         print("corpus file not found, incorrect language specification or bad corpus filepath (see CORPUS_PATH in utils/corpus_load.py)", file=sys.stderr)
         sys.exit(1)
@@ -64,7 +64,7 @@ def load_data(paths : list[Path], model_checkpoint : str) -> Dataset:
         registers += sample(lang_regs, min_len)
     
     tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
-    encoded_texts = dict(tokenizer(texts, return_tensors='pt', padding='max_length', truncation=True))
+    encoded_texts = dict(tokenizer(texts, return_tensors="pt", padding="max_length", truncation=True))
     registers = [REG2ID[reg] for reg in registers]
     
     return RegisterDataset(encoded_texts, registers)

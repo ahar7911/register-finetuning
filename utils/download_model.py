@@ -1,7 +1,7 @@
 import json
 from huggingface_hub import snapshot_download
 
-with open('model2chckpt.json') as file:
+with open("model2chckpt.json") as file:
     model2chckpt = json.load(file)
 
 for chckpt in model2chckpt.values():
