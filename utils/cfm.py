@@ -99,3 +99,4 @@ def confusion_matrices(base_dir : Path,
         fig.tight_layout()
         fig.savefig(model_folder / "cfm.png", bbox_inches="tight")
         print(f"confusion matrices for {model} trained on {train_lang} saved")
+    print("all confusion matrices saved")
