@@ -136,7 +136,7 @@ def main(rank : int,
 
     loss_fn = None
     if balanced:
-        train_labels = [item["labels"] for item in train_dataset]
+        train_labels = [item["labels"].item() for item in train_dataset]
 
         print(np.unique(train_labels))
         from sklearn.preprocessing import LabelEncoder
@@ -144,7 +144,7 @@ def main(rank : int,
         y_ind = le.fit_transform(train_labels)
         print(le.classes_)
         print(train_labels)
-        
+
         weights = compute_class_weight("balanced", classes=np.unique(train_labels), y=train_labels)
         print(weights)
         loss_fn = torch.nn.CrossEntropyLoss(weight=torch.tensor(weights))
