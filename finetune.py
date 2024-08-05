@@ -137,6 +137,7 @@ def main(rank : int,
     loss_fn = None
     if balanced:
         train_labels = [item["labels"] for item in train_dataset]
+        print(np.unique(train_labels))
         weights = compute_class_weight("balanced", classes=np.unique(train_labels), y=train_labels)
         print(weights)
         loss_fn = torch.nn.CrossEntropyLoss(weight=torch.tensor(weights))
