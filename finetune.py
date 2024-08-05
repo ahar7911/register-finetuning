@@ -159,8 +159,8 @@ if __name__ == "__main__":
                         help="Training outputs will be saved to output/subfolder/ and model will be saved to models/subfolder/")
     parser.add_argument("--balanced", action="store_true",
                         help="Whether model will train such that each class is weighted equally or not")
-    parser.add_argument("--num_epochs", default=5, type=int,
-                        help="Number of epochs to finetune model for (default: 5)")
+    parser.add_argument("--num_epochs", default=20, type=int,
+                        help="Number of epochs to finetune model for (default: 20)")
     parser.add_argument("--batch_size", default=16, type=int,
                         help="Size of each training batch (default: 16)")
     parser.add_argument("--learning_rate", default=1e-5, type=float,
