@@ -25,6 +25,7 @@ else:
 REGISTERS = list(REG_ABBV2NAME.keys())
 REG2ID = {reg : REGISTERS.index(reg) for reg in REGISTERS}
 
+
 class RegisterDataset(Dataset):
     def __init__(self, encoded_texts : dict[str, list[torch.Tensor]], registers : list[int]) -> None:
         self.encoded_texts = encoded_texts
@@ -52,23 +53,7 @@ def get_texts_regs(path : Path) -> tuple[list[str], list[str]]:
     return texts, registers
 
 
-def get_weights(registers : list[str]) -> torch.Tensor:
-    reg_counts = {reg : 0 for reg in REGISTERS}
-    for reg in registers:
-        reg_counts[reg] += 1
-    total = sum(reg_counts.values())
-
-    weights = []
-    for count in reg_counts.values():
-        if count == 0:
-            weights.append(0)
-        else:
-            weights.append(total / count)
-    
-    return torch.tensor(weights)
-
-
-def load_data(paths : list[Path], model_checkpoint : str) -> tuple[Dataset, torch.Tensor]:
+def load_data(paths : list[Path], model_checkpoint : str) -> Dataset:
     all_texts_regs = [get_texts_regs(path) for path in paths]
     min_len = min([len(texts) for texts, _ in all_texts_regs])
 
@@ -78,10 +63,8 @@ def load_data(paths : list[Path], model_checkpoint : str) -> tuple[Dataset, torc
         texts += sample(lang_texts, min_len)
         registers += sample(lang_regs, min_len)
     
-    weights = get_weights(registers)
-    
     tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
     encoded_texts = dict(tokenizer(texts, return_tensors='pt', padding='max_length', truncation=True))
     registers = [REG2ID[reg] for reg in registers]
     
-    return RegisterDataset(encoded_texts, registers), weights
+    return RegisterDataset(encoded_texts, registers)

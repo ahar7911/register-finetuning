@@ -82,7 +82,7 @@ def main(model_name : str,
     classifier.to(device)
 
     eval_lang_tsv = Path(f"test/{eval_lang}.tsv")
-    test_dataset, _ = load_data([eval_lang_tsv], checkpoint)
+    test_dataset = load_data([eval_lang_tsv], checkpoint)
     test_dataloader = DataLoader(test_dataset, batch_size=64)
     
     metrics = Metrics(num_labels, device)

@@ -3,11 +3,13 @@ import os
 import time
 from pathlib import Path
 import json
+import numpy as np
 
 import torch
 from torch.utils.data import DataLoader, random_split
 from torch.amp import GradScaler
 from transformers import AutoModelForSequenceClassification, get_scheduler
+from sklearn.utils.class_weight import compute_class_weight
 
 import torch.multiprocessing as mp
 from torch.utils.data.distributed import DistributedSampler
@@ -110,7 +112,7 @@ def main(rank : int,
     model = DDP(model, device_ids=[rank])
 
     train_lang_tsvs = [Path(f"train/{train_lang}.tsv") for train_lang in train_langs.split("-")]
-    dataset, weights = load_data(train_lang_tsvs, checkpoint)
+    dataset = load_data(train_lang_tsvs, checkpoint)
     train_dataset, val_dataset = random_split(dataset, [0.8, 0.2])
     train_dataloader = DataLoader(train_dataset, 
                                   batch_size=batch_size,
@@ -134,7 +136,10 @@ def main(rank : int,
 
     loss_fn = None
     if balanced:
-        loss_fn = torch.nn.CrossEntropyLoss(weight=weights)
+        train_labels = train_dataset.registers
+        weights = compute_class_weight('balanced', classes=np.unique(train_labels), y=train_labels)
+        print(weights)
+        loss_fn = torch.nn.CrossEntropyLoss(weight=torch.tensor(weights))
         loss_fn.to(rank)
 
     train(model, train_dataloader, val_dataloader, rank, num_epochs, optimizer, lr_scheduler, metrics, out_path, loss_fn)
