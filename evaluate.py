@@ -23,7 +23,7 @@ def evaluate(model : transformers.PreTrainedModel,
              ) -> None:
     if store_cfm:
         if eval_lang is None:
-            print("eval_lang cannot be None is store_cfm is true, ending evaluation", file=sys.stderr)
+            print("eval_lang cannot be None when store_cfm is true, ending evaluation", file=sys.stderr)
             return None
         all_labels = []
         all_preds = []
@@ -57,7 +57,7 @@ def evaluate(model : transformers.PreTrainedModel,
         print("confusion matrices saved")
 
 
-def main(model_name : str, train_langs : list[str], eval_lang : str) -> None:
+def main(model_name : str, train_langs : str, eval_lang : str) -> None:
     with open(Path("utils/model2chckpt.json")) as file:
         model2chckpt = json.load(file)
     
@@ -69,7 +69,9 @@ def main(model_name : str, train_langs : list[str], eval_lang : str) -> None:
     try:
         classifier = AutoModelForSequenceClassification.from_pretrained(f"./models/{model_str}")
     except:
-        print(f"model not found, incorrect model name {model_name} or no saved model has been trained on specified language(s) {train_langs}. maybe check the order of your language strings?", file=sys.stderr)
+        print(f"""model not found, incorrect model name {model_name} 
+              or no saved model has been trained on specified language(s) {train_langs}. 
+              maybe check the order of your language strings?""", file=sys.stderr)
         sys.exit(1)
     classifier.to(device)
 
@@ -78,9 +80,7 @@ def main(model_name : str, train_langs : list[str], eval_lang : str) -> None:
     test_dataloader = DataLoader(test_dataset, batch_size=64)
     
     metrics = Metrics(num_labels, device)
-
     out_path = Path(f"output/{model_str}/eval.json")
-    out_path.parent.mkdir(parents=True, exist_ok=True) # makes output dir
     
     evaluate(classifier, test_dataloader, device, metrics, out_path, metric_key=eval_lang, eval_lang=eval_lang)
     

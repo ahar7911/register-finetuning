@@ -125,14 +125,14 @@ def main(rank : int,
     )
     metrics = Metrics(num_labels, rank)
 
+    out_path = Path(f"output/{model_str}/train.json")
+    out_path.unlink(missing_ok=True) # removes train.json if it already exists
+    (out_path.parent / "eval.json").unlink(missing_ok=True) # removes eval.json if it already exists
+
     loss_fn = None
     if balanced:
         loss_fn = torch.nn.CrossEntropyLoss(weight=weights)
         loss_fn.to(rank)
-
-    out_path = Path(f"output/{model_str}/train.json")
-    out_path.unlink(missing_ok=True) # removes train.json if it already exists
-    (out_path.parent / "eval.json").unlink(missing_ok=True) # removes eval.json if it already exists
 
     train(model, train_dataloader, val_dataloader, rank, num_epochs, optimizer, lr_scheduler, metrics, out_path, loss_fn)
     model.module.save_pretrained(Path(f"./models/{model_str}/"), from_pt=True) # creates necessary subfolders if required
