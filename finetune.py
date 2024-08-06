@@ -86,6 +86,20 @@ def train(model : DDP,
     print(f"gpu{rank}: end training | total time: {int(total_time // 60)}m{total_time % 60:.2f}s")
 
 
+def get_weights(train_labels : list[int], num_labels : int) -> torch.tensor:
+    present_classes = sorted(np.unique(train_labels))
+    weights = compute_class_weight("balanced", classes=present_classes, y=train_labels)
+
+    if len(present_classes) != num_labels: # one or more classes not present in training data
+        class2weight = dict(zip(present_classes, weights))
+        for curr_class in range(num_labels):
+            if curr_class not in class2weight:
+                class2weight[curr_class] = 0
+        weights = [class2weight[c] for c in range(num_labels)]
+
+    return torch.tensor(weights, dtype=torch.float)
+
+
 def main(rank : int, 
          world_size: int, 
          model_name : str, 
@@ -137,9 +151,7 @@ def main(rank : int,
     loss_fn = None
     if balanced:
         train_labels = [item["labels"].item() for item in train_dataset]
-        weights = compute_class_weight("balanced", classes=np.array(range(num_labels)), y=train_labels)
-        weights = torch.tensor(weights, dtype=torch.float)
-        print(weights)
+        weights = get_weights(train_labels, num_labels)
         loss_fn = torch.nn.CrossEntropyLoss(weight=weights)
         loss_fn.to(rank)
 
