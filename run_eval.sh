@@ -19,7 +19,7 @@ eval_langs=("en" "fi" "fr" "sv" "ar" "ca" "es" "fa" "hi" "id" "jp" "no" "pt" "ru
 echo "evaluating $model trained on $train_lang"
 for eval_lang in "${eval_langs[@]}"; do
     echo "evaluating on $eval_lang"
-    cmd="srun python evaluate.py --model $model --train_langs $lang --eval_lang $eval_lang"
+    cmd="srun python evaluate.py --model $model --train_langs $train_lang --eval_lang $eval_lang"
     if [ ! -z "${subfolder}" ]; then
         cmd+=" --subfolder $subfolder"
     fi
