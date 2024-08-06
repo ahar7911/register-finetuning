@@ -184,5 +184,4 @@ if __name__ == "__main__":
     print(f"world size (# of gpus): {world_size}")
 
     main_args = (world_size,) + tuple(vars(args).values())
-    print(main_args)
     mp.spawn(main, args=main_args, nprocs=world_size)

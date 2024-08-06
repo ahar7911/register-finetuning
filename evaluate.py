@@ -104,6 +104,5 @@ if __name__ == "__main__":
                         help="Evaluation outputs will be saved to output/subfolder/ and model will be taken from models/subfolder/")
     args = parser.parse_args()
     args_dict = vars(args)
-    print(args_dict)
     
     main(**args_dict)
