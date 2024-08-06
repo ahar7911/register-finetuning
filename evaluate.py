@@ -94,7 +94,7 @@ def main(model_name : str,
 if __name__ == "__main__":
     parser = ArgumentParser(prog="Evaluate register classification",
                             description="Evaluates multilingual model's ability to classify registers in one language")
-    parser.add_argument("--model", choices=["mbert", "xlmr", "glot500"], required=True,
+    parser.add_argument("--model_name", choices=["mbert", "xlmr", "glot500"], required=True,
                         help="Name of model to evaluate")
     parser.add_argument("--train_langs", required=True, 
                         help="Language(s) model was fine-tuned on, multiple languages must be separated by '-'")
@@ -103,5 +103,7 @@ if __name__ == "__main__":
     parser.add_argument("--subfolder",
                         help="Evaluation outputs will be saved to output/subfolder/ and model will be taken from models/subfolder/")
     args = parser.parse_args()
+    args_dict = vars(args)
+    print(args_dict)
     
-    main(**vars(args))
+    main(**args_dict)

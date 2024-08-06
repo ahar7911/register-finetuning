@@ -164,7 +164,7 @@ def main(rank : int,
 if __name__ == "__main__":
     parser = ArgumentParser(prog="Register fine-tuning",
                             description="Fine-tuning LLMs for multilingual classification of registers")
-    parser.add_argument("--model", choices=["mbert", "xlmr", "glot500"], required=True,
+    parser.add_argument("--model_name", choices=["mbert", "xlmr", "glot500"], required=True,
                         help="LLM to finetune")
     parser.add_argument("--train_langs", required=True,
                         help="Language(s) to finetune register classification on, multiple languages must be separated by '-'")
@@ -184,4 +184,5 @@ if __name__ == "__main__":
     print(f"world size (# of gpus): {world_size}")
 
     main_args = (world_size,) + tuple(vars(args).values())
+    print(main_args)
     mp.spawn(main, args=main_args, nprocs=world_size)
