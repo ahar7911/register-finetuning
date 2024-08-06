@@ -74,9 +74,9 @@ def train(model : DDP,
         
         lr_scheduler.step() # once per epoch
         
-        epoch_str = f"epoch {epoch + 1}"
+        epoch_str = f"gpu{rank}: epoch {epoch + 1}"
         epoch_time = time.time() - epoch_start_time
-        print(f"gpu{rank}: {epoch_str} | loss: {loss} | time: {int(epoch_time // 60)}m{epoch_time % 60:.2f}s")
+        print(f"{epoch_str} | loss: {loss} | time: {int(epoch_time // 60)}m{epoch_time % 60:.2f}s")
 
         metrics.write_summary(out_path, epoch_str)
         
