@@ -33,7 +33,7 @@ def plot_tve_matrix(base_dir : Path,
 
 
 def get_all_train_eval_langs(base_dir : Path, model : str) -> tuple[list[str], list[str]]:
-    train_langs = []
+    train_langs = set()
     eval_langs = set()
     
     for model_folder in base_dir.iterdir():
@@ -42,7 +42,7 @@ def get_all_train_eval_langs(base_dir : Path, model : str) -> tuple[list[str], l
         
         parts = model_folder.name.split("-", maxsplit=1)
         if parts[0] == model:
-            train_langs.append(parts[1])
+            train_langs.add(parts[1])
             
             json_path = model_folder / "eval.json"
             with open(json_path, "r") as file:
@@ -50,11 +50,13 @@ def get_all_train_eval_langs(base_dir : Path, model : str) -> tuple[list[str], l
                 eval_langs.update(list(metrics.keys()))
 
     # order langs so that diagonal forms of same train and eval lang
-    train_langs = sorted(train_langs)
+    shared_langs = train_langs & eval_langs
+    only_train_langs = list(train_langs - shared_langs)
+    only_eval_langs = list(eval_langs - shared_langs)
 
-    train_langs_in_eval = list(set(train_langs) & eval_langs)
-    only_eval_langs = list(eval_langs - set(train_langs))
-    eval_langs = sorted(train_langs_in_eval) + sorted(only_eval_langs)
+    shared_langs = sorted(list(shared_langs))
+    train_langs = shared_langs + sorted(only_train_langs)
+    eval_langs = shared_langs + sorted(only_eval_langs)
     
     return train_langs, eval_langs
 

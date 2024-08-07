@@ -2,28 +2,26 @@ import sys
 from pathlib import Path
 import json
 import math
+from collections import Counter
 
 import pandas as pd
 import matplotlib
 import matplotlib.pyplot as plt
 import seaborn as sn
 
-from utils.corpus_load import CORPUS_PATH
+from utils.corpus_load import get_texts_regs
 
 
 def plot_summary(ax : matplotlib.axes.Axes, train_lang : str) -> None:
-    # obtaining corpus summary statistics
-    summary_path = CORPUS_PATH / f"summaries/{train_lang}.json"
-    if summary_path.exists():
-        with open(summary_path) as summary_file:
-            train_lang_summary = json.load(summary_file)["counts"]
-    else:
-        print(f"invalid path to summary json file {summary_path} for lang {train_lang}", file=sys.stderr)
-        print(f"check if CORPUS_PATH in utils/corpus_load.py correctly directs to register-corpus directory, or rerun analyze_dist.sh in register-corpus", file=sys.stderr)
-        sys.exit(1)
+    train_lang_tsvs = [Path(f"train/{train_lang}.tsv") for train_lang in train_lang.split("-")]
+    registers = []
+    for train_lang_tsv in train_lang_tsvs:
+        _, train_lang_regs = get_texts_regs(train_lang_tsv)
+        registers.extend(train_lang_regs)
+    register_counts = Counter(registers)
     
     # plotting corpus summary statistics
-    ax.bar(*zip(*train_lang_summary.items()))
+    ax.bar(*zip(*register_counts.items()))
     ax.set_title(f"number of texts per register in {train_lang} corpus")
     ax.set_xlabel("register")
     ax.set_ylabel("number of texts")
