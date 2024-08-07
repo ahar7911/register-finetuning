@@ -139,7 +139,9 @@ def main(rank : int,
                                 sampler=DistributedSampler(val_dataset))
 
     if num_epochs == 0:
-        num_epochs = math.ceil(50000 / len(train_dataset))
+        num_examples = len(train_dataset)
+        num_epochs = math.ceil(50000 / num_examples)
+        print(f"{num_examples} examples in training dataset, running for {num_epochs} epochs")
     
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr)
     lr_scheduler = get_scheduler(
