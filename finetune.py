@@ -3,6 +3,7 @@ import os
 import time
 from pathlib import Path
 import json
+import math
 import numpy as np
 
 import torch
@@ -136,6 +137,9 @@ def main(rank : int,
     val_dataloader = DataLoader(val_dataset,
                                 batch_size=batch_size,  
                                 sampler=DistributedSampler(val_dataset))
+
+    if num_epochs == 0:
+        num_epochs = math.ceil(50000 / len(train_dataset))
     
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr)
     lr_scheduler = get_scheduler(
@@ -174,8 +178,8 @@ if __name__ == "__main__":
                         help="Training outputs will be saved to output/subfolder/ and model will be saved to models/subfolder/")
     parser.add_argument("--balanced", action="store_true",
                         help="Whether model will train such that each class is weighted equally or not")
-    parser.add_argument("--num_epochs", default=20, type=int,
-                        help="Number of epochs to finetune model for (default: 20)")
+    parser.add_argument("--num_epochs", default=0, type=int,
+                        help="Number of epochs to finetune model for (default: variable such that model sees 50,000 examples)")
     parser.add_argument("--batch_size", default=16, type=int,
                         help="Size of each training batch (default: 16)")
     parser.add_argument("--learning_rate", default=1e-5, type=float,
