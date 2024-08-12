@@ -65,7 +65,7 @@ def check_valid_langs(default_langs : list[str], new_langs : list[str], lang_typ
     if new_langs is None:
         return default_langs
     elif len(set(new_langs) - set(default_langs)) == 0:
-        print(f"some tve {lang_type} langs specified ({' '.join(new_langs)}) do not exist for specified or default models", file=sys.stderr)
+        print(f"some or all of the specified tve {lang_type} langs ({' '.join(new_langs)}) do not exist for specified or default models", file=sys.stderr)
         print(f"languages that do exist are: {' '.join(default_langs)}", file=sys.stderr)
         sys.exit(1)
     else:
