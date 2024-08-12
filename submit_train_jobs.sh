@@ -13,7 +13,7 @@ for model in "${models[@]}"; do
         fi
         mkdir -p $output_dir
         echo "submitting finetuning job for $model on $lang"
-        sbatch --job-name="finetune-${model}-${lang}" --output="$output_dir/train.txt" run_train.sh $model $lang $subfolder
+        sbatch --job-name="finetune_${model}_${lang}" --output="$output_dir/train.txt" run_train.sh $model $lang $subfolder
     done
 done
 echo "all jobs submitted"

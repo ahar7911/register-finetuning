@@ -13,7 +13,7 @@ for model in "${models[@]}"; do
         fi
         mkdir -p $output_dir
         echo "submitting evaluation job for $model on $lang"
-        sbatch --job-name="evaluate-${model}-${lang}" --output="$output_dir/eval.txt" run_eval.sh $model $lang $subfolder
+        sbatch --job-name="evaluate_${model}_${lang}" --output="$output_dir/eval.txt" run_eval.sh $model $lang $subfolder
     done
 done
 echo "all jobs submitted"
