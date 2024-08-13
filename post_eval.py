@@ -8,8 +8,6 @@ from utils.cfm import confusion_matrices
 from utils.tve import tve_matrices
 
 
-base_dir = Path("output")
-
 def get_argument_names(func : Callable) -> list[str]:
     signature = inspect.signature(func)
     return [param.name for param in signature.parameters.values()]
@@ -44,8 +42,8 @@ def main(args):
 if __name__ == "__main__":
     parser = ArgumentParser(prog="Post-evaluation analysis",
                             description="Plots confusion matrices for each model, train lang, and eval lang combo, as well as a train vs. evaluation language (tve) plot of metrics")
-    parser.add_argument("--subfolder",
-                        help="If specified, uses output data found in the subfolder of output folder (output/subfolder/)")
+    parser.add_argument("--base_dir", default="output",
+                        help="Uses output data found in given directory, default is the output directory")
     
     parser.add_argument("--ignore_cfm", action="store_true",
                         help="Will not create confusion matrices (no matter what other arguments for confusion matrices are provided)")
@@ -70,8 +68,10 @@ if __name__ == "__main__":
                         help="Evaluation languages to include in train vs. eval lang metric matrix")
 
     args = parser.parse_args()
+    base_dir = Path(args.base_dir)
     if not base_dir.exists() or not base_dir.is_dir() or not any(base_dir.iterdir()):
         print(f"current filepath to output directory ({base_dir}) does not exist, is not a directory, or is empty", file=sys.stderr)
         print("run evaluate.py on a finetuned model and an evaluation language, or run run_eval.sh", file=sys.stderr)
         sys.exit(1)
+    args.base_dir = base_dir
     main(args)
