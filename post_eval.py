@@ -25,8 +25,6 @@ def get_defined_args(all_args : dict[str, Any], func : Callable, lead_str : str)
 
 def main(args):
     args_dict = vars(args)
-    print(args_dict["base_dir"])
-    print(type(args_dict["base_dir"]))
 
     if not args.ignore_cfm:
         cfm_args = get_defined_args(args_dict, confusion_matrices, "cfm_") 
