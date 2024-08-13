@@ -1,7 +1,7 @@
 #! /bin/bash
 
-models=("xlmr")
-langs=("en-fi" "en-fr" "en-sv" "fi-fr" "fi-sv" "fr-sv" "id" "ru" "tr")
+models=("mbert" "xlmr" "glot500")
+langs=("de")
 subfolder="ul"
 
 for model in "${models[@]}"; do
