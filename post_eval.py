@@ -8,6 +8,8 @@ from utils.cfm import confusion_matrices
 from utils.tve import tve_matrices
 
 
+base_dir = Path("output")
+
 def get_argument_names(func : Callable) -> list[str]:
     signature = inspect.signature(func)
     return [param.name for param in signature.parameters.values()]
@@ -26,7 +28,6 @@ def get_defined_args(all_args : dict[str, Any], func : Callable, lead_str : str)
 def main(args):
     args_dict = vars(args)
 
-    base_dir = Path("output")
     if args.subfolder is not None:
         base_dir = base_dir / args.subfolder
 
