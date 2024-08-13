@@ -16,6 +16,7 @@ def plot_summary(ax : matplotlib.axes.Axes, train_lang : str) -> None:
     train_lang_tsvs = [Path(f"train/{train_lang}.tsv") for train_lang in train_lang.split("-")]
     registers = []
     for train_lang_tsv in train_lang_tsvs:
+        print(train_lang_tsv)
         _, train_lang_regs = get_texts_regs(train_lang_tsv)
         registers.extend(train_lang_regs)
     register_counts = Counter(registers)
@@ -96,5 +97,6 @@ def confusion_matrices(base_dir : Path,
         
         fig.tight_layout()
         fig.savefig(model_folder / "cfm.png", bbox_inches="tight")
+        plt.close(fig)
         print(f"confusion matrices for {model} trained on {train_lang} saved")
     print("all confusion matrices saved")

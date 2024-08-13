@@ -94,4 +94,5 @@ def tve_matrices(base_dir : Path,
 
     fig.tight_layout()
     fig.savefig(base_dir / "tve.png", bbox_inches="tight")
+    plt.close(fig)
     print("tve matrices saved")
