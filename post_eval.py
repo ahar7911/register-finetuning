@@ -25,9 +25,8 @@ def get_defined_args(all_args : dict[str, Any], func : Callable, lead_str : str)
 
 def main(args):
     args_dict = vars(args)
-
-    if args.subfolder is not None:
-        base_dir = base_dir / args.subfolder
+    print(args["base_dir"])
+    print(type(args["base_dir"]))
 
     if not args.ignore_cfm:
         cfm_args = get_defined_args(args_dict, confusion_matrices, "cfm_") 
