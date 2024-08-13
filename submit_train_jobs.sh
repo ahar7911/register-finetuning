@@ -2,7 +2,7 @@
 
 models=("mbert" "xlmr" "glot500")
 langs=("de")
-subfolder="bl"
+subfolder="ul"
 
 for model in "${models[@]}"; do
     for lang in "${langs[@]}"; do
