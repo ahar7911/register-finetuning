@@ -53,10 +53,16 @@ def confusion_matrices(base_dir : Path,
     for model_folder in base_dir.iterdir():
         if not model_folder.is_dir():
             continue
+        
+        if (model_folder / "cfm.png").exists():
+            print(f"saved cfm already exists in {model_folder}")
 
         cfm_folder = model_folder / "cfm"
         model, train_lang = model_folder.name.split("-", maxsplit=1)
         if (models is not None and model not in models) or (train_langs is not None and train_lang not in train_langs):
+            continue
+        if not cfm_folder.exists():
+            print(f"no cfm folder exists in folder {model_folder}")
             continue
 
         cfm_paths = []
