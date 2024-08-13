@@ -1,8 +1,8 @@
 #! /bin/bash
 
 models=("mbert" "xlmr" "glot500")
-langs=("distr" "en-fr" "fi-sv" "fr-sv")
-subfolder=""
+langs=("en" "fi" "fr" "sv" "en-fi" "en-fr" "en-sv" "fi-fr" "fi-sv" "fr-sv" "id" "ru" "tr")
+subfolder="bl"
 
 for model in "${models[@]}"; do
     for lang in "${langs[@]}"; do
