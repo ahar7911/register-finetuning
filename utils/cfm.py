@@ -56,6 +56,7 @@ def confusion_matrices(base_dir : Path,
         
         if (model_folder / "cfm.png").exists():
             print(f"saved cfm already exists in {model_folder}")
+            continue
 
         cfm_folder = model_folder / "cfm"
         model, train_lang = model_folder.name.split("-", maxsplit=1)
