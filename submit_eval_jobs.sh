@@ -3,7 +3,7 @@
 models=("mbert" "xlmr" "glot500")
 langs=("de")
 #("en" "fi" "fr" "sv" "en-fi" "en-fr" "en-sv" "fi-fr" "fi-sv" "fr-sv" "id" "ru" "tr")
-subfolder="ul"
+subfolder="bl"
 
 for model in "${models[@]}"; do
     for lang in "${langs[@]}"; do
