@@ -7,7 +7,6 @@ import inspect
 from utils.cfm import confusion_matrices
 from utils.tve import tve_matrices
 
-base_dir = Path("output")
 
 def get_argument_names(func : Callable) -> list[str]:
     signature = inspect.signature(func)
@@ -27,6 +26,10 @@ def get_defined_args(all_args : dict[str, Any], func : Callable, lead_str : str)
 def main(args):
     args_dict = vars(args)
 
+    base_dir = Path("output")
+    if args.subfolder is not None:
+        base_dir = base_dir / args.subfolder
+
     if not args.ignore_cfm:
         cfm_args = get_defined_args(args_dict, confusion_matrices, "cfm_") 
         cfm_args["base_dir"] = base_dir      
@@ -40,6 +43,9 @@ def main(args):
 if __name__ == "__main__":
     parser = ArgumentParser(prog="Post-evaluation analysis",
                             description="Plots confusion matrices for each model, train lang, and eval lang combo, as well as a train vs. evaluation language (tve) plot of metrics")
+    parser.add_argument("--subfolder",
+                        help="If specified, uses output data found in the subfolder of output folder (output/subfolder/)")
+    
     parser.add_argument("--ignore_cfm", action="store_true",
                         help="Will not create confusion matrices (no matter what other arguments for confusion matrices are provided)")
     parser.add_argument("--cfm_ignore_summary", action="store_true",
