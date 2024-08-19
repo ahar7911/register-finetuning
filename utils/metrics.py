@@ -1,14 +1,9 @@
 from pathlib import Path
 import json
-import numpy as np
-import pandas as pd
 
 import torch
 import torchmetrics
 from torchmetrics.classification import MulticlassF1Score, MulticlassPrecision, MulticlassRecall#, MulticlassAccuracy
-from sklearn.metrics import confusion_matrix
-
-from utils.corpus_load import REGISTERS
 
 class Metrics:
     def __init__(self, num_classes : int, device : torch.device):
@@ -56,22 +51,3 @@ class Metrics:
 
         with open(path, "w") as file:
             json.dump(past_summaries, file, indent=4)
-
-
-# modified from https://christianbernecker.medium.com/how-to-create-a-confusion-matrix-in-pytorch-38d06a7f04b7
-def save_cfm(preds : torch.Tensor, 
-                   labels : torch.Tensor, 
-                   out_path : Path
-                   ) -> None:
-    cf_matrix = confusion_matrix(labels, preds, labels=range(len(REGISTERS)))
-    register_totals = np.sum(cf_matrix, axis=1)
-    cf_matrix = np.divide(cf_matrix, register_totals[:, None], where=cf_matrix!=0)
-
-    row_labels = [f"{reg}\n(total:{total})" for reg, total in zip(REGISTERS, register_totals)]
-    df_cm = pd.DataFrame(cf_matrix, index=row_labels, columns=REGISTERS)
-
-    if not out_path.parent.exists(): # cfm directory does not exist yet
-        out_path.parent.mkdir(parents=True)
-
-    with open(out_path, "w") as file: # overwrites existing cfm matrix, if exists
-        json.dump(df_cm.to_dict(), file, indent=4)

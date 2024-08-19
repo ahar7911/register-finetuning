@@ -10,7 +10,8 @@ import torch
 from torch.utils.data import DataLoader
 
 from utils.corpus_load import load_data, REGISTERS
-from utils.metrics import Metrics, save_cfm
+from utils.metrics import Metrics
+from utils.cfm import save_cfm
 
 def evaluate(model : transformers.PreTrainedModel, 
              test_dataloader : DataLoader, 
