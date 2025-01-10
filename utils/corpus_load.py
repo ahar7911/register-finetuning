@@ -8,24 +8,27 @@ import torch
 from torch.utils.data import Dataset
 from transformers import AutoTokenizer
 
-CORPUS_PATH = Path("../register-corpus") # path to repo register corpus
+# load register-corpus repository and perform checks
+CORPUS_PATH = Path("../register-corpus") # path to register-corpus repository
 if not CORPUS_PATH.exists() or not CORPUS_PATH.is_dir() or not any(CORPUS_PATH.iterdir()):
-    print(f"current filepath to register-corpus repo ({CORPUS_PATH}) does not exist, is not a directory, or is empty", file=sys.stderr)
-    print("edit the CORPUS_PATH variable in utils/corpus_load.py to the proper directory", file=sys.stderr)
+    print(f"Current filepath to register-corpus repository ({CORPUS_PATH}) does not exist, is not a directory, or is empty", file=sys.stderr)
+    print("Edit the CORPUS_PATH variable in register-finetuning/utils/corpus_load.py to the proper directory", file=sys.stderr)
     sys.exit(1)
 
+# load list of registers from register-corpus
 reg_abbv_path = CORPUS_PATH / "info/reg_abbv.json"
 if reg_abbv_path.exists():
     with open(reg_abbv_path) as reg_abbv_file:
         REG_ABBV2NAME = json.load(reg_abbv_file)
 else:
-    print(f"register abbreviation json file not found at {reg_abbv_path}, check if path is correct or register-corpus path {CORPUS_PATH} is correct", file=sys.stderr)
+    print(f"Register abbreviation JSON file not found at {reg_abbv_path}, check if path is correct or register-corpus path {CORPUS_PATH} is correct", file=sys.stderr)
     sys.exit(1)
 
 REGISTERS = list(REG_ABBV2NAME.keys())
 REG2ID = {reg : REGISTERS.index(reg) for reg in REGISTERS}
 
 
+# custom dataset class for tokenized register-labeled texts
 class RegisterDataset(Dataset):
     def __init__(self, encoded_texts : dict[str, list[torch.Tensor]], registers : list[int]) -> None:
         self.encoded_texts = encoded_texts
@@ -41,11 +44,11 @@ class RegisterDataset(Dataset):
     
 
 def get_texts_regs(path : Path) -> tuple[list[str], list[str]]:
-    path = CORPUS_PATH / "corpus" / path
+    path = CORPUS_PATH / "corpus" / path # path assumed to be relative to register-corpus/corpus/
     if path.exists():
         dataset = pd.read_csv(path, sep="\t")
     else:
-        print("corpus file not found, incorrect language specification or bad corpus filepath (see CORPUS_PATH in utils/corpus_load.py)", file=sys.stderr)
+        print(f"Corpus file not found at {path}, incorrect language specification or bad corpus filepath (see CORPUS_PATH in utils/corpus_load.py)", file=sys.stderr)
         sys.exit(1)
 
     texts = dataset.iloc[:,1].tolist()
@@ -54,15 +57,16 @@ def get_texts_regs(path : Path) -> tuple[list[str], list[str]]:
 
 
 def load_data(paths : list[Path], model_checkpoint : str) -> Dataset:
-    all_texts_regs = [get_texts_regs(path) for path in paths]
-    min_len = min([len(texts) for texts, _ in all_texts_regs])
+    all_texts_regs = [get_texts_regs(path) for path in paths] # list of tuples of lists of texts and of registers
+    min_len = min([len(texts) for texts, _ in all_texts_regs]) # smallest number of texts one path/corpus has
 
     texts = []
     registers = []
-    for lang_texts, lang_regs in all_texts_regs:
+    for lang_texts, lang_regs in all_texts_regs: # random samples so equal amounts of texts from each path/corpus
         texts += sample(lang_texts, min_len)
         registers += sample(lang_regs, min_len)
     
+    # tokenize texts
     tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
     encoded_texts = dict(tokenizer(texts, return_tensors="pt", padding="max_length", truncation=True))
     registers = [REG2ID[reg] for reg in registers]

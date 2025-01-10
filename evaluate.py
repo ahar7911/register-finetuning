@@ -65,8 +65,8 @@ def main(model_name : str,
          ) -> None:
     with open(Path("utils/model2chckpt.json")) as file:
         model2chckpt = json.load(file)
-    
     checkpoint = model2chckpt[model_name]
+    
     num_labels = len(REGISTERS)
     model_str = f"{model_name}-{train_langs}"
     if subfolder is not None:
@@ -76,9 +76,9 @@ def main(model_name : str,
     try:
         classifier = AutoModelForSequenceClassification.from_pretrained(f"./models/{model_str}")
     except:
-        print(f"""model not found, incorrect model name {model_name} 
+        print(f"""Model not found, incorrect model name {model_name} 
               or no saved model has been trained on specified language(s) {train_langs}. 
-              maybe check the order of your language strings?""", file=sys.stderr)
+              Maybe check the order of your language strings?""", file=sys.stderr)
         sys.exit(1)
     classifier.to(device)
 

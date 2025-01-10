@@ -23,13 +23,13 @@ def plot_tve_matrix(base_dir : Path,
         with open(metrics_path, "r") as file:
             metric_summary = json.load(file)
         
-        for eval_lang, metrics in metric_summary.items():
+        for eval_lang, metrics in metric_summary.items(): # add to dataframe
             tve_df.at[train_lang, eval_lang] = metrics[f"{metric}"]
 
     sn.heatmap(tve_df, vmin=0.0, vmax=1.0, cmap="Purples", annot=True, cbar=False, ax=ax)
     ax.set_title(f"{model} {metric}")
-    ax.set_xlabel("eval lang")
-    ax.set_ylabel("train lang")
+    ax.set_xlabel("Eval lang")
+    ax.set_ylabel("Train lang")
 
 
 def get_all_train_eval_langs(base_dir : Path, model : str) -> tuple[list[str], list[str]]:
@@ -40,16 +40,16 @@ def get_all_train_eval_langs(base_dir : Path, model : str) -> tuple[list[str], l
         if not model_folder.is_dir():
             continue
         
-        parts = model_folder.name.split("-", maxsplit=1)
+        parts = model_folder.name.split("-", maxsplit=1) # of form model-lang1-lang2-...
         if parts[0] == model:
             train_langs.add(parts[1])
             
             json_path = model_folder / "eval.json"
             with open(json_path, "r") as file:
                 metrics = json.load(file)
-                eval_langs.update(list(metrics.keys()))
+                eval_langs.update(list(metrics.keys())) # keys of eval.json are the eval language abbreviations
 
-    # order langs so that diagonal forms of same train and eval lang
+    # order langs so that diagonal forms of same train and eval lang, then the rest by alphabetical
     shared_langs = train_langs & eval_langs
     only_train_langs = list(train_langs - shared_langs)
     only_eval_langs = list(eval_langs - shared_langs)
@@ -62,11 +62,11 @@ def get_all_train_eval_langs(base_dir : Path, model : str) -> tuple[list[str], l
 
 
 def check_valid_langs(default_langs : list[str], new_langs : list[str], lang_type : str) -> list[str]:
-    if new_langs is None:
+    if new_langs is None: # no languages were specified to tve_matrices, use default
         return default_langs
-    elif len(set(new_langs) - set(default_langs)) == 0:
-        print(f"some or all of the specified tve {lang_type} langs ({' '.join(new_langs)}) do not exist for specified or default models", file=sys.stderr)
-        print(f"languages that do exist are: {' '.join(default_langs)}", file=sys.stderr)
+    elif len(set(new_langs) - set(default_langs)) == 0: # some languages specified aren't in default
+        print(f"Some or all of the specified TVE {lang_type} langs ({' '.join(new_langs)}) do not exist for specified or default models", file=sys.stderr)
+        print(f"Languages that do exist are: {' '.join(default_langs)}", file=sys.stderr)
         sys.exit(1)
     else:
         return new_langs
@@ -78,21 +78,23 @@ def tve_matrices(base_dir : Path,
                  train_langs : list[str] = None,
                  eval_langs : list[str] = None
                  ) -> None:
+    # set up figure and axes
     fig, axes = plt.subplots(nrows=len(metrics), 
                              ncols=len(models),
                              figsize=(10 * len(models), 4 * len(metrics)))
-    fig.suptitle("train vs. eval lang", fontsize=20)
+    fig.suptitle("Train vs. eval lang", fontsize=20)
 
     for model_ind, model in enumerate(models):
+        # get languages that have been trained and evaluated
         default_train_langs, default_eval_langs = get_all_train_eval_langs(base_dir, model)
         model_train_langs = check_valid_langs(default_train_langs, train_langs, "train")
         model_eval_langs = check_valid_langs(default_eval_langs, eval_langs, "eval")      
 
         for metr_ind, metric in enumerate(metrics):
             plot_tve_matrix(base_dir, axes[metr_ind, model_ind], model, metric, model_train_langs, model_eval_langs)
-            print(f"tve matrix for {model} on metric {metric} plotted")
+            print(f"TVE matrix for {model} on metric {metric} plotted")
 
     fig.tight_layout()
     fig.savefig(base_dir / "tve.png", bbox_inches="tight")
     plt.close(fig)
-    print("tve matrices saved")
+    print("TVE matrices saved")

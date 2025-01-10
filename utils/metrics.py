@@ -31,16 +31,16 @@ class Metrics:
         return metric_summary
     
     def write_summary(self, path : Path, key : str):
-        if path.exists() and path.is_file():
+        if path.exists() and path.is_file(): # if path exists, load existing summaries
             with open(path, "r") as file:
                 past_summaries = json.load(file)
-        else:
-            if not path.parent.exists():
+        else: # if path does not exist, start from scratch
+            if not path.parent.exists(): # make parent directory to ensure writing to file later
                 path.parent.mkdir(parents=True)
             past_summaries = {}
         
-        summary = self.get_summary()
-        past_summaries[key] = summary
+        summary = self.get_summary() # get current metric summary
+        past_summaries[key] = summary # add to existing summaries
 
         # organize keys (either languages or training epochs) by alphabetical order if not already
         summary_keys = list(past_summaries.keys())
@@ -49,5 +49,5 @@ class Metrics:
             sorted_summary = {key : past_summaries[key] for key in sorted_keys}
             past_summaries = sorted_summary
 
-        with open(path, "w") as file:
+        with open(path, "w") as file: # save summaries
             json.dump(past_summaries, file, indent=4)

@@ -13,6 +13,8 @@ def get_argument_names(func : Callable) -> list[str]:
     return [param.name for param in signature.parameters.values()]
 
 def get_defined_args(all_args : dict[str, Any], func : Callable, lead_str : str) -> dict[str, Any]:
+    # returns a subset of the all_args dict of all specified (not None) args 
+    # where the key begins with lead_str and the rest of the key is an argument to func
     func_arg_names = get_argument_names(func)
     args = {}
     for arg_name, value in all_args.items():
@@ -67,8 +69,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     base_dir = Path(args.base_dir)
     if not base_dir.exists() or not base_dir.is_dir() or not any(base_dir.iterdir()):
-        print(f"current filepath to output directory ({base_dir}) does not exist, is not a directory, or is empty", file=sys.stderr)
-        print("run evaluate.py on a finetuned model and an evaluation language, or run run_eval.sh", file=sys.stderr)
+        print(f"Current filepath to output directory ({base_dir}) does not exist, is not a directory, or is empty", file=sys.stderr)
+        print("Run evaluate.py on a finetuned model and an evaluation language, or run run_eval.sh", file=sys.stderr)
         sys.exit(1)
     args.base_dir = base_dir
     main(args)

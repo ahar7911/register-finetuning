@@ -117,8 +117,9 @@ def main(rank : int,
 
     with open(Path("utils/model2chckpt.json")) as file:
         model2chckpt = json.load(file)
-
     checkpoint = model2chckpt[model_name]
+
+    # load model info
     num_labels = len(REGISTERS)
     model_str = f"{model_name}-{train_langs}"
     if subfolder is not None:
@@ -138,7 +139,7 @@ def main(rank : int,
                                 batch_size=batch_size,  
                                 sampler=DistributedSampler(val_dataset))
 
-    if num_epochs == 0:
+    if num_epochs is None: # if number of epochs unspecified, run as many epochs for the model to see 50000 examples/texts
         num_examples = len(train_dataset)
         num_epochs = math.ceil(50000 / num_examples)
         print(f"{num_examples} examples in training dataset, running for {num_epochs} epochs")
@@ -180,7 +181,7 @@ if __name__ == "__main__":
                         help="Training outputs will be saved to output/subfolder/ and model will be saved to models/subfolder/")
     parser.add_argument("--balanced", action="store_true",
                         help="Whether model will train such that each class is weighted equally or not")
-    parser.add_argument("--num_epochs", default=0, type=int,
+    parser.add_argument("--num_epochs", type=int,
                         help="Number of epochs to finetune model for (default: variable such that model sees 50,000 examples)")
     parser.add_argument("--batch_size", default=16, type=int,
                         help="Size of each training batch (default: 16)")
